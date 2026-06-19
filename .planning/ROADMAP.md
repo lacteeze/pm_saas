@@ -45,7 +45,13 @@
   4. An org admin can invite an employee by email; the invitee signs up and is immediately scoped to that org and role with no manual configuration
   5. An org admin can remove a user from the org and that user's active sessions are revoked
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 01-01-PLAN.md — Project scaffold, Supabase clients, test harness, RLS linter
+- [ ] 01-02-PLAN.md — Schema, Auth Hook JWT claims, RLS policies, storage, schema push
+- [ ] 01-03-PLAN.md — RLS isolation, JWT, admin, manager, plan-limit tests
+- [ ] 01-04-PLAN.md — Middleware routing, portal shells, admin isolation, auth config
+- [ ] 01-05-PLAN.md — Sign-in (4 methods), OAuth callbacks, onboarding wizard
+- [ ] 01-06-PLAN.md — Invite flow, people list, session revocation, org settings
 **UI hint**: yes
 
 ---
@@ -240,7 +246,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/6 | Not started | - |
 | 2. Core Data Model | 0/? | Not started | - |
 | 3. Public Listings | 0/? | Not started | - |
 | 4. Payments | 0/? | Not started | - |

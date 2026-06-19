@@ -59,7 +59,7 @@ The core promise: one system that connects properties, owners, tenants, vendors,
 ### SMS
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| `twilio` (Node SDK) | latest | SMS notifications + vendor comms | `client.messages.create()` — straightforward. Industry standard, Canadian numbers supported. |
+| Pingram | latest | SMS notifications + vendor comms | Supersedes Twilio per ROADMAP Phase 10. See https://www.pingram.io/docs/ — Canadian numbers supported. |
 ### File Storage
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
@@ -93,7 +93,7 @@ The core promise: one system that connects properties, owners, tenants, vendors,
 |------------|---------|-----|
 | Vercel | Next.js hosting | Zero-config Next.js deployment, preview deployments per PR, Edge Network, serverless functions co-located with code. |
 | Supabase (hosted) | Database + Auth + Storage + Realtime | Managed PostgreSQL, automatic backups, dashboard for schema management. Start on Pro plan ($25/mo) — free tier has no daily backups and pauses after inactivity (unsuitable for production). |
-| Supabase Edge Functions | Background processing, webhooks | Handles Stripe webhooks, sends Twilio SMS, sends Resend emails triggered by DB events. Deno runtime, deployed alongside Supabase project. |
+| Supabase Edge Functions | Background processing, webhooks | Handles Stripe webhooks, sends Pingram SMS, sends Resend emails triggered by DB events. Deno runtime, deployed alongside Supabase project. |
 ## Multi-Tenancy Architecture in Supabase (Key Question #4)
 ### Schema Pattern
 ### RLS Pattern
@@ -113,7 +113,7 @@ The core promise: one system that connects properties, owners, tenants, vendors,
 | `@stripe/react-stripe-js` | latest | React wrapper |
 | `resend` | latest | |
 | `react-email` | latest | |
-| `twilio` | latest | |
+| Pingram | latest | Supersedes Twilio (ROADMAP Phase 10) |
 | `@react-pdf/renderer` | latest | Server PDF generation |
 | `pdf-lib` | latest | PDF merging/manipulation only |
 | `react-hook-form` | v7.x | |
@@ -155,7 +155,7 @@ The core promise: one system that connects properties, owners, tenants, vendors,
 - React-pdf renderer (via Context7 `/diegomura/react-pdf`): `renderToBuffer()`, `renderToStream()` Node.js API
 - Stripe docs (via Context7 `/websites/stripe`): Subscriptions, metered billing
 - Resend docs (via Context7 `/websites/resend`): Next.js App Router integration, React Email
-- Twilio Node docs (via Context7 `/twilio/twilio-node`): SMS `messages.create()` API
+- Pingram SMS docs: https://www.pingram.io/docs/ (supersedes Twilio per ROADMAP Phase 10)
 - Zod docs (via Context7 `/colinhacks/zod`): v4 current stable
 - shadcn/ui (via Context7 `/shadcn-ui/ui`): CLI-managed component model
 - TanStack Query (via Context7 `/tanstack/query`): v5 (noted but not required given RSC approach)
