@@ -189,24 +189,113 @@
 
 ## Traceability
 
-| Requirement | Phase |
-|-------------|-------|
-| FOUND-01 to FOUND-14 | Phase 1: Foundation |
-| ORGS-01 to ORGS-06 | Phase 1: Foundation |
-| PEOPLE-01 to PEOPLE-04 | Phase 2: Core Data Model |
-| PROP-01 to PROP-06 | Phase 2: Core Data Model |
-| LEASE-01 to LEASE-06 | Phase 2: Core Data Model |
-| LIST-01 to LIST-07 | Phase 3: Public Listings |
-| PAY-01 to PAY-10 | Phase 4: Payments |
-| MAINT-01 to MAINT-09 | Phase 5: Maintenance |
-| TENANT-01 to TENANT-06 | Phase 6: Tenant Portal |
-| OWNER-01 to OWNER-07 | Phase 7: Owner Portal |
-| VENDOR-01 to VENDOR-05 | Phase 8: Vendor Portal |
-| INSP-01 to INSP-05 | Phase 9: Inspections |
-| DOC-01 to DOC-05 | Phase 10: Documents & Integrations |
-| INT-01 to INT-04 | Phase 10: Documents & Integrations |
-| NOTIF-01 to NOTIF-04 | Phase 10: Documents & Integrations |
-| BILLING-01 to BILLING-05 | Phase 11: SaaS Billing & Admin |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| FOUND-01 | Phase 1: Foundation | Pending |
+| FOUND-02 | Phase 1: Foundation | Pending |
+| FOUND-03 | Phase 1: Foundation | Pending |
+| FOUND-04 | Phase 1: Foundation | Pending |
+| FOUND-05 | Phase 1: Foundation | Pending |
+| FOUND-06 | Phase 1: Foundation | Pending |
+| FOUND-07 | Phase 1: Foundation | Pending |
+| FOUND-08 | Phase 1: Foundation | Pending |
+| FOUND-09 | Phase 1: Foundation | Pending |
+| FOUND-10 | Phase 1: Foundation | Pending |
+| FOUND-11 | Phase 1: Foundation | Pending |
+| FOUND-12 | Phase 1: Foundation | Pending |
+| FOUND-13 | Phase 1: Foundation | Pending |
+| FOUND-14 | Phase 1: Foundation | Pending |
+| ORGS-01 | Phase 1: Foundation | Pending |
+| ORGS-02 | Phase 1: Foundation | Pending |
+| ORGS-03 | Phase 1: Foundation | Pending |
+| ORGS-04 | Phase 1: Foundation | Pending |
+| ORGS-05 | Phase 1: Foundation | Pending |
+| ORGS-06 | Phase 1: Foundation | Pending |
+| PEOPLE-01 | Phase 2: Core Data Model | Pending |
+| PEOPLE-02 | Phase 2: Core Data Model | Pending |
+| PEOPLE-03 | Phase 2: Core Data Model | Pending |
+| PEOPLE-04 | Phase 2: Core Data Model | Pending |
+| PROP-01 | Phase 2: Core Data Model | Pending |
+| PROP-02 | Phase 2: Core Data Model | Pending |
+| PROP-03 | Phase 2: Core Data Model | Pending |
+| PROP-04 | Phase 2: Core Data Model | Pending |
+| PROP-05 | Phase 2: Core Data Model | Pending |
+| PROP-06 | Phase 2: Core Data Model | Pending |
+| LEASE-01 | Phase 2: Core Data Model | Pending |
+| LEASE-02 | Phase 2: Core Data Model | Pending |
+| LEASE-03 | Phase 2: Core Data Model | Pending |
+| LEASE-04 | Phase 2: Core Data Model | Pending |
+| LEASE-05 | Phase 2: Core Data Model | Pending |
+| LEASE-06 | Phase 2: Core Data Model | Pending |
+| LIST-01 | Phase 3: Public Listings | Pending |
+| LIST-02 | Phase 3: Public Listings | Pending |
+| LIST-03 | Phase 3: Public Listings | Pending |
+| LIST-04 | Phase 3: Public Listings | Pending |
+| LIST-05 | Phase 3: Public Listings | Pending |
+| LIST-06 | Phase 3: Public Listings | Pending |
+| LIST-07 | Phase 3: Public Listings | Pending |
+| PAY-01 | Phase 4: Payments | Pending |
+| PAY-02 | Phase 4: Payments | Pending |
+| PAY-03 | Phase 4: Payments | Pending |
+| PAY-04 | Phase 4: Payments | Pending |
+| PAY-05 | Phase 4: Payments | Pending |
+| PAY-06 | Phase 4: Payments | Pending |
+| PAY-07 | Phase 4: Payments | Pending |
+| PAY-08 | Phase 4: Payments | Pending |
+| PAY-09 | Phase 4: Payments | Pending |
+| PAY-10 | Phase 4: Payments | Pending |
+| MAINT-01 | Phase 5: Maintenance | Pending |
+| MAINT-02 | Phase 5: Maintenance | Pending |
+| MAINT-03 | Phase 5: Maintenance | Pending |
+| MAINT-04 | Phase 5: Maintenance | Pending |
+| MAINT-05 | Phase 5: Maintenance | Pending |
+| MAINT-06 | Phase 5: Maintenance | Pending |
+| MAINT-07 | Phase 5: Maintenance | Pending |
+| MAINT-08 | Phase 5: Maintenance | Pending |
+| MAINT-09 | Phase 5: Maintenance | Pending |
+| TENANT-01 | Phase 6: Tenant Portal | Pending |
+| TENANT-02 | Phase 6: Tenant Portal | Pending |
+| TENANT-03 | Phase 6: Tenant Portal | Pending |
+| TENANT-04 | Phase 6: Tenant Portal | Pending |
+| TENANT-05 | Phase 6: Tenant Portal | Pending |
+| TENANT-06 | Phase 6: Tenant Portal | Pending |
+| OWNER-01 | Phase 7: Owner Portal | Pending |
+| OWNER-02 | Phase 7: Owner Portal | Pending |
+| OWNER-03 | Phase 7: Owner Portal | Pending |
+| OWNER-04 | Phase 7: Owner Portal | Pending |
+| OWNER-05 | Phase 7: Owner Portal | Pending |
+| OWNER-06 | Phase 7: Owner Portal | Pending |
+| OWNER-07 | Phase 7: Owner Portal | Pending |
+| VENDOR-01 | Phase 8: Vendor Portal | Pending |
+| VENDOR-02 | Phase 8: Vendor Portal | Pending |
+| VENDOR-03 | Phase 8: Vendor Portal | Pending |
+| VENDOR-04 | Phase 8: Vendor Portal | Pending |
+| VENDOR-05 | Phase 8: Vendor Portal | Pending |
+| INSP-01 | Phase 9: Inspections | Pending |
+| INSP-02 | Phase 9: Inspections | Pending |
+| INSP-03 | Phase 9: Inspections | Pending |
+| INSP-04 | Phase 9: Inspections | Pending |
+| INSP-05 | Phase 9: Inspections | Pending |
+| DOC-01 | Phase 10: Documents & Integrations | Pending |
+| DOC-02 | Phase 10: Documents & Integrations | Pending |
+| DOC-03 | Phase 10: Documents & Integrations | Pending |
+| DOC-04 | Phase 10: Documents & Integrations | Pending |
+| DOC-05 | Phase 10: Documents & Integrations | Pending |
+| INT-01 | Phase 10: Documents & Integrations | Pending |
+| INT-02 | Phase 10: Documents & Integrations | Pending |
+| INT-03 | Phase 10: Documents & Integrations | Pending |
+| INT-04 | Phase 10: Documents & Integrations | Pending |
+| NOTIF-01 | Phase 10: Documents & Integrations | Pending |
+| NOTIF-02 | Phase 10: Documents & Integrations | Pending |
+| NOTIF-03 | Phase 10: Documents & Integrations | Pending |
+| NOTIF-04 | Phase 10: Documents & Integrations | Pending |
+| BILLING-01 | Phase 11: SaaS Billing & Admin | Pending |
+| BILLING-02 | Phase 11: SaaS Billing & Admin | Pending |
+| BILLING-03 | Phase 11: SaaS Billing & Admin | Pending |
+| BILLING-04 | Phase 11: SaaS Billing & Admin | Pending |
+| BILLING-05 | Phase 11: SaaS Billing & Admin | Pending |
+
+**Total: 71/71 requirements mapped**
 
 ---
 
