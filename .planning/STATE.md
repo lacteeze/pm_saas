@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-20T23:36:31.788Z"
+last_updated: "2026-06-20T23:53:36.068Z"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
 # Canary PropOS — Project State
 
 **Last updated:** 2026-06-20
-**Session:** Plan 01-04 complete — middleware, portal shells, Supabase Auth dashboard config done. Next: Plan 01-05 (auth UI forms).
+**Session:** Plan 01-05 complete — sign-in page (4 auth methods), OAuth/magic-link callbacks, 5-step onboarding wizard, org-creation Server Action. Next: Plan 01-06.
 
 ---
 
@@ -30,13 +30,13 @@ progress:
 ## Current Position
 
 Phase: 01 (Foundation) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 | Field | Value |
 |-------|-------|
 | Phase | 1 — Foundation |
-| Plan | 05 — Auth UI Forms |
+| Plan | 06 — SetupBanner + People List |
 | Status | Ready to execute |
-| Phase progress | Plans 01-04 complete; 01-02 Tasks 4+5 still pending DB push credentials |
+| Phase progress | Plans 01-05 complete; 01-02 Tasks 4+5 still pending DB push credentials |
 
 ```
 Overall: [▓░░░░░░░░░░░░░░░░░░░] 3% (2/71 requirements)

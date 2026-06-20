@@ -50,7 +50,7 @@
 - [x] 01-02-PLAN.md — Schema, Auth Hook JWT claims, RLS policies, storage, schema push
 - [x] 01-03-PLAN.md — RLS isolation, JWT, admin, manager, plan-limit tests
 - [x] 01-04-PLAN.md — Middleware routing, portal shells, admin isolation, auth config
-- [ ] 01-05-PLAN.md — Sign-in (4 methods), OAuth callbacks, onboarding wizard
+- [x] 01-05-PLAN.md — Sign-in (4 methods), OAuth callbacks, onboarding wizard
 - [ ] 01-06-PLAN.md — Invite flow, people list, session revocation, org settings
 **UI hint**: yes
 
@@ -246,7 +246,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 3/6 | In Progress|  |
+| 1. Foundation | 4/6 | In Progress|  |
 | 2. Core Data Model | 0/? | Not started | - |
 | 3. Public Listings | 0/? | Not started | - |
 | 4. Payments | 0/? | Not started | - |

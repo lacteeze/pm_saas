@@ -9,7 +9,7 @@
 
 ### FOUNDATION — Auth & Multi-Tenancy
 
-- [ ] **FOUND-01**: User can create an organization account (SaaS sign-up) with email/password
+- [x] **FOUND-01**: User can create an organization account (SaaS sign-up) with email/password
 - [x] **FOUND-02**: User can sign in with Google OAuth
 - [x] **FOUND-03**: User can sign in with Apple OAuth
 - [x] **FOUND-04**: User can sign in with magic link (passwordless email)
@@ -191,7 +191,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1: Foundation | Pending |
+| FOUND-01 | Phase 1: Foundation | Complete |
 | FOUND-02 | Phase 1: Foundation | Complete |
 | FOUND-03 | Phase 1: Foundation | Complete |
 | FOUND-04 | Phase 1: Foundation | Complete |
