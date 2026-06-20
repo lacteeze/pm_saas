@@ -42,7 +42,7 @@ decisions:
 metrics:
   duration: "~15 minutes"
   completed: "2026-06-20"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 17
 ---
@@ -94,18 +94,22 @@ Five route groups created:
 - Heading: `{Feature} coming soon`
 - Body: `This section is being built. Check back in the next update.`
 
-### Task 3 — Supabase Auth Config Checklist (23e5453, checkpoint:human-action)
+### Task 3 — Supabase Auth Dashboard Configuration (23e5453, completed by user)
 
-`docs/supabase-auth-config.md` created with step-by-step instructions for each dashboard-only setting:
+`docs/supabase-auth-config.md` checklist created and user completed all applicable settings in the Supabase Dashboard:
 
-1. Google OAuth — client ID/secret, redirect URI
-2. Apple OAuth — Services ID, key, redirect URI
-3. Magic link / SMTP — Resend as custom SMTP provider
-4. Session duration — JWT expiry 604800s (7 days), refresh token rotation
-5. **Realtime private-only — required before Phase 2** (T-04-03 security gate)
-6. Allowed redirect URLs — `app.canarypm.ca`, `localhost:3000`
+| Setting | Value | Status |
+|---------|-------|--------|
+| Session JWT expiry | 604800s (7 days) | Done |
+| Refresh token rotation | Enabled | Done |
+| Redirect URLs | https://app.canarypm.ca, http://localhost:3000 | Done |
+| SMTP provider | smtp.ca.pingram.io / port 465 / Pingram API key | Done |
+| Auth Hook | public.custom_access_token_hook registered | Done |
+| Realtime private channels | Enforced in code (no dashboard toggle needed) | Done |
+| Google OAuth | Deferred — no credentials yet | Deferred |
+| Apple OAuth | Deferred — no credentials yet | Deferred |
 
-This task is a `checkpoint:human-action` — the checklist is created and committed, but the actual dashboard configuration requires human action in the Supabase Dashboard.
+**SMTP note:** Pingram was used instead of Resend for SMTP (smtp.ca.pingram.io), consistent with the stack decision to consolidate on Pingram for all communications. The plan referenced Resend from an earlier stack draft.
 
 ---
 
