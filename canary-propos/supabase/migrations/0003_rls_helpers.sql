@@ -74,3 +74,23 @@ STABLE
 AS $$
   SELECT (auth.jwt() -> 'app_metadata' ->> 'person_id')::uuid;
 $$;
+
+-- ============================================================
+-- CI linter helper: tables_without_rls()
+-- Called by scripts/check-rls.ts to gate CI on missing RLS.
+-- Returns the tablename of any public table lacking row security.
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.tables_without_rls()
+RETURNS TABLE (tablename text)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT t.tablename::text
+  FROM pg_tables t
+  WHERE t.schemaname = 'public'
+    AND NOT t.rowsecurity
+  ORDER BY t.tablename;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.tables_without_rls TO service_role;
