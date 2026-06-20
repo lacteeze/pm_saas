@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-06-19T17:46:34.054Z"
+status: in_progress
+last_updated: "2026-06-20T00:00:00Z"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 6
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 3
 ---
 
 # Canary PropOS — Project State
 
-**Last updated:** 2026-06-19
-**Session:** Roadmap initialized
+**Last updated:** 2026-06-20
+**Session:** Plan 01-02 executed (Tasks 1-3 complete; Tasks 4-5 await human credentials + dashboard action)
 
 ---
 
@@ -23,22 +23,24 @@ progress:
 
 **Core value:** A unified hub where any authorized party — manager, owner, tenant, or vendor — can see exactly what they need and take exactly the actions they're allowed to, without phone calls, emails, or spreadsheets filling the gap.
 
-**Current focus:** Phase 1 — Foundation (auth, multi-tenancy, RLS, JWT custom claims, org & team management)
+**Current focus:** Phase 01 — Foundation
 
 ---
 
 ## Current Position
 
+Phase: 01 (Foundation) — EXECUTING
+Plan: 2 of 6 (partially complete — Tasks 4+5 pending credentials)
 | Field | Value |
 |-------|-------|
 | Phase | 1 — Foundation |
-| Plan | None started |
-| Status | Not started |
-| Phase progress | 0 / 20 requirements complete |
+| Plan | 02 — Database Schema + RLS (Tasks 1-3 done; 4-5 pending) |
+| Status | Awaiting credentials for schema push |
+| Phase progress | ~6 / 20 requirements complete (FOUND-05,06,07,08,09,10,11,12,13 partially — schema authored; not yet pushed) |
 
 ```
-Overall: [░░░░░░░░░░░░░░░░░░░░] 0% (0/71 requirements)
-Phase 1: [░░░░░░░░░░░░░░░░░░░░] 0% (0/20 requirements)
+Overall: [▓░░░░░░░░░░░░░░░░░░░] 3% (2/71 requirements)
+Phase 1: [▓▓░░░░░░░░░░░░░░░░░░] 10% (2/20 requirements)
 ```
 
 ---
@@ -98,7 +100,7 @@ Phase 1: [░░░░░░░░░░░░░░░░░░░░] 0% (0/20
 
 ### Blockers
 
-None currently.
+- **Plan 01-02 Tasks 4+5:** SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD needed in canary-propos/.env.local for `supabase db push`. After push, Auth Hook must be registered in Supabase Dashboard → Authentication → Hooks → Custom Access Token → select `public.custom_access_token_hook`.
 
 ### Todos (cross-phase)
 
@@ -110,11 +112,20 @@ None currently.
 
 ## Session Continuity
 
-**To resume:** Run `/gsd:plan-phase 1` to generate the execution plan for Phase 1: Foundation.
+**To resume Tasks 4+5 of 01-02:**
+1. Get SUPABASE_ACCESS_TOKEN from Supabase Dashboard → Account → Access Tokens
+2. Get SUPABASE_DB_PASSWORD from Supabase Dashboard → Project Settings → Database → Database password
+3. Update canary-propos/.env.local with real values for both
+4. Run: `cd canary-propos && npx supabase link --project-ref mdzegkaymdsmgspdgkko`
+5. Run: `SUPABASE_ACCESS_TOKEN=<token> npx supabase db push`
+6. Run: `npx supabase gen types typescript --linked > src/types/supabase.ts`
+7. Verify: `npx tsx scripts/check-rls.ts` passes
+8. Register Auth Hook: Supabase Dashboard → Authentication → Hooks → Custom Access Token → select `public.custom_access_token_hook`
+9. Commit: src/types/supabase.ts
 
 **Context for next session:**
 
-- Roadmap is complete, 71/71 requirements mapped across 11 phases
-- Phase 1 is first — establishes `@supabase/ssr`, org RLS, Auth Hook JWT claims, private Realtime channels, team management
-- Getting Phase 1 wrong (wrong Supabase client, public Realtime channels, no RLS linter) triggers a full rewrite
-- No plans exist yet; all phases are at "Not started"
+- Plans 01-01 and 01-02 (Tasks 1-3) are complete
+- 7 migrations authored: organizations, people, RLS helpers+hook, org RLS, people RLS, storage bucket, units+trigger
+- Schema push pending credentials (see blockers)
+- Next plan after Tasks 4-5 complete: 01-03 (middleware, portal route groups, auth UI)
