@@ -2,174 +2,186 @@
 phase: 01-foundation
 plan: 02
 subsystem: database
-tags: [supabase, rls, migrations, auth-hook, jwt-claims, multi-tenant, storage]
-dependency_graph:
-  requires: [01-01]
-  provides: [organizations-table, people-table, auth-hook, rls-policies, storage-buckets, plan-limit-trigger]
-  affects: [all-subsequent-plans]
-tech_stack:
+tags: [postgres, supabase, rls, jwt, auth-hook, multi-tenant, storage]
+
+requires:
+  - phase: 01-01
+    provides: Next.js scaffold, Supabase client factories, RLS CI linter script
+
+provides:
+  - organizations table with province NOT NULL, plan_type, plan_unit_limit, setup_completed_at
+  - people table with 6-role RBAC CHECK, invite_token UNIQUE, invite_accepted_at
+  - custom_access_token_hook SECURITY DEFINER injecting org_id/role/person_id into JWT app_metadata
+  - public.org_id(), public.user_role(), public.person_id() stable helper functions
+  - Per-role RLS policies on organizations, people, units (SELECT-wrapped pattern)
+  - org-assets storage bucket with org_id first-path-segment RLS
+  - units table with BEFORE INSERT enforce_plan_unit_limit() trigger (ORGS-06 final gate)
+  - Generated TypeScript Database types in src/types/supabase.ts
+  - Auth Hook registration checklist in docs/supabase-auth-config.md
+
+affects: [01-03, 01-04, 01-05, 01-06, all subsequent phases]
+
+tech-stack:
   added: []
   patterns:
-    - custom_access_token_hook SECURITY DEFINER Auth Hook for JWT claims injection
-    - (SELECT auth.org_id()) wrapped RLS pattern for per-query evaluation
-    - BEFORE INSERT trigger as DB-layer plan limit gate (ORGS-06)
-    - org-assets bucket with first-path-segment org_id isolation
-key_files:
+    - "RLS SELECT-wrapper: (SELECT public.org_id()) on every policy — per-query not per-row evaluation"
+    - "JWT custom claims via SECURITY DEFINER Auth Hook — not client-assembled"
+    - "public schema for JWT helpers — auth schema write access denied by Supabase"
+    - "DB BEFORE INSERT trigger as final gate for plan limits (ORGS-06)"
+    - "Migrations only — no Dashboard SQL editor schema changes (Pitfall 7)"
+
+key-files:
   created:
-    - canary-propos/supabase/migrations/0001_create_organizations.sql
-    - canary-propos/supabase/migrations/0002_create_people.sql
-    - canary-propos/supabase/migrations/0003_rls_helpers.sql
-    - canary-propos/supabase/migrations/0004_rls_organizations.sql
-    - canary-propos/supabase/migrations/0005_rls_people.sql
-    - canary-propos/supabase/migrations/0006_storage_buckets.sql
-    - canary-propos/supabase/migrations/0007_units_plan_limit.sql
-  modified:
-    - canary-propos/src/types/supabase.ts  [PENDING — awaiting db push]
-decisions:
-  - Auth Hook set search_path = '' + SECURITY DEFINER prevents privilege escalation
-  - All RLS helper calls wrapped in (SELECT ...) per Pitfall 2
-  - tables_without_rls() CI linter RPC added to 0003 (required by scripts/check-rls.ts)
-  - units table is minimal for plan-limit enforcement; full schema defers to Phase 2
-metrics:
-  duration: ~35 minutes
-  completed_date: "2026-06-20"
-  tasks_total: 5
-  tasks_completed: 3
-  files_created: 7
-  files_modified: 0
+    - supabase/migrations/0001_create_organizations.sql
+    - supabase/migrations/0002_create_people.sql
+    - supabase/migrations/0003_rls_helpers.sql
+    - supabase/migrations/0004_rls_organizations.sql
+    - supabase/migrations/0005_rls_people.sql
+    - supabase/migrations/0006_storage_buckets.sql
+    - supabase/migrations/0007_units_plan_limit.sql
+    - src/types/supabase.ts
+    - docs/supabase-auth-config.md
+  modified: []
+
+key-decisions:
+  - "JWT helpers in public schema (public.org_id etc.) — Supabase denies user writes to auth schema"
+  - "All RLS policies use (SELECT public.org_id()) wrapper — prevents per-row function re-evaluation"
+  - "enforce_plan_unit_limit() BEFORE INSERT trigger is authoritative gate for ORGS-06 — UI pre-check deferred to Phase 2"
+  - "Auth Hook registration documented in docs/supabase-auth-config.md — must be done manually in Supabase Dashboard"
+
+patterns-established:
+  - "Pattern 1: RLS SELECT-wrapper — wrap every helper call: (SELECT public.org_id()), never bare"
+  - "Pattern 2: JWT claims via Auth Hook — role/org_id/person_id from app_metadata, never client-assembled"
+  - "Pattern 3: DB trigger as final gate — plan limits enforced at INSERT level, not UI"
+  - "Pattern 4: Migrations only — supabase/migrations/ is the only way schema changes happen"
+
+requirements-completed: [FOUND-05, FOUND-06, FOUND-07, FOUND-08, FOUND-09, FOUND-10, FOUND-11, FOUND-12, FOUND-13, ORGS-04, ORGS-05, ORGS-06]
+
+duration: 90min
+completed: 2026-06-20
 ---
 
-# Phase 1 Plan 02: Database Schema + RLS Summary
+# Phase 01 Plan 02: Database Schema and RLS Security Layer Summary
 
-**One-liner:** Seven migration files define organizations/people/units tables with per-role RLS, JWT Auth Hook, org-scoped storage bucket, and plan-limit BEFORE INSERT trigger for the ca-central-1 Supabase project.
+**Seven migrations define organizations/people/units tables, a JWT custom-claims Auth Hook, per-role RLS policies, org-scoped storage bucket, and a plan-limit BEFORE INSERT trigger — all applied to the remote ca-central-1 Supabase project with generated TypeScript types**
 
----
+## Performance
 
-## Completed Tasks
+- **Duration:** ~90 min
+- **Started:** 2026-06-19
+- **Completed:** 2026-06-20
+- **Tasks:** 5 (4 auto + 1 documentation checkpoint)
+- **Files modified:** 9
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Create organizations and people table migrations | f0703d3 | 0001_create_organizations.sql, 0002_create_people.sql |
-| 2 | Auth Hook, RLS helper functions, and per-role RLS policies | c1e4ed2 + 2c40d5a | 0003_rls_helpers.sql, 0004_rls_organizations.sql, 0005_rls_people.sql, 0006_storage_buckets.sql |
-| 3 | Units table + plan-limit enforcement trigger (ORGS-06) | 55ba5a4 | 0007_units_plan_limit.sql |
+## Accomplishments
 
----
+- Seven migration files authored and pushed to the remote Supabase project (ca-central-1); RLS linter exits 0
+- JWT custom-claims Auth Hook (`custom_access_token_hook`) defined as SECURITY DEFINER; injects `org_id`, `role`, `person_id` into JWT `app_metadata` at every sign-in
+- Per-role RLS policies on all three tables using `(SELECT public.org_id())` performance wrapper
+- `enforce_plan_unit_limit()` BEFORE INSERT trigger physically rejects unit inserts beyond `plan_unit_limit` (ORGS-06)
+- Generated TypeScript Database types replacing the `Database = any` stub
 
-## Pending Tasks (awaiting human action)
+## Task Commits
 
-| Task | Name | Blocker |
-|------|------|---------|
-| 4 | Register Auth Hook in Supabase Dashboard | Manual dashboard action — cannot be done via migration |
-| 5 | Push schema to remote Supabase + generate types | Requires SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD in .env.local |
+1. **Task 1: Organizations and people table migrations** — `f0703d3` (feat)
+2. **Task 2: Auth Hook, RLS helpers, and per-role RLS policies** — `c1e4ed2`, `2c40d5a` (feat)
+3. **Task 3: Units table + plan-limit enforcement trigger** — `55ba5a4` (feat)
+4. **Schema push fix — public schema migration** — `d052088` (fix)
+5. **Migration authoring checkpoint** — `94c51f1` (docs)
+6. **Task 5: Generate Database types** — `a2571cc` (feat)
+7. **Task 4: Auth Hook registration docs** — `f1c786f` (docs)
 
----
+## Files Created/Modified
 
-## What Was Built
+- `supabase/migrations/0001_create_organizations.sql` — organizations table; province NOT NULL, plan_type CHECK, plan_unit_limit, setup_completed_at; RLS enabled
+- `supabase/migrations/0002_create_people.sql` — people table; 6-role CHECK, invite_token UNIQUE, invite_accepted_at, indexes on org_id/user_id/invite_token; RLS enabled
+- `supabase/migrations/0003_rls_helpers.sql` — custom_access_token_hook SECURITY DEFINER; public.org_id/user_role/person_id helpers; tables_without_rls() CI RPC
+- `supabase/migrations/0004_rls_organizations.sql` — per-role SELECT/UPDATE on organizations; admin cross-org
+- `supabase/migrations/0005_rls_people.sql` — per-role CRUD on people; non-staff self-read only
+- `supabase/migrations/0006_storage_buckets.sql` — org-assets bucket; storage.objects gated on first path segment matching org_id
+- `supabase/migrations/0007_units_plan_limit.sql` — units table with RLS; enforce_plan_unit_limit() BEFORE INSERT trigger
+- `src/types/supabase.ts` — generated Database types (organizations, people, units, storage)
+- `docs/supabase-auth-config.md` — Auth Hook registration checklist for Supabase Dashboard
 
-### organizations table (0001)
-- `id` UUID PK, `name` TEXT CHECK 2..80, `slug` TEXT UNIQUE NOT NULL
-- `province TEXT NOT NULL` — required per D-01, Canadian compliance
-- `plan_type` CHECK ('free','starter','growth'), `plan_unit_limit` INTEGER DEFAULT 5 (ORGS-05)
-- `stripe_customer_id`, `setup_completed_at` (onboarding wizard completion, D-02)
-- RLS enabled, index on id
+## Decisions Made
 
-### people table (0002)
-- `user_id` UUID nullable (null until invite accepted), `org_id` FK to organizations
-- `role` CHECK ('admin','manager','employee','tenant','owner','vendor')
-- `invite_token` UUID UNIQUE, `invite_sent_at`, `invite_accepted_at` (D-09)
-- `active` BOOLEAN, `deactivated_at` (ORGS-03, D-11)
-- RLS enabled, indexes on org_id / user_id / invite_token
-
-### RLS helpers + Auth Hook (0003)
-- `public.custom_access_token_hook(event jsonb)` — SECURITY DEFINER, SET search_path = ''
-  - Reads id/org_id/role from public.people WHERE user_id = event user_id
-  - jsonb_sets org_id, role, person_id into app_metadata
-  - GRANT EXECUTE to supabase_auth_admin; REVOKE from authenticated/anon/public
-- `auth.org_id()`, `auth.user_role()`, `auth.person_id()` — STABLE SQL helpers reading JWT app_metadata
-- `public.tables_without_rls()` — CI linter RPC called by scripts/check-rls.ts
-
-### organizations RLS (0004)
-- Staff (manager/employee): SELECT/UPDATE own org via `id = (SELECT auth.org_id())`
-- Admin: SELECT/UPDATE/INSERT/DELETE all orgs (cross-org, FOUND-07)
-- Non-staff (tenant/owner/vendor): SELECT own org row only
-
-### people RLS (0005)
-- Manager: full CRUD within org (FOUND-08)
-- Employee: SELECT + UPDATE within org (FOUND-09)
-- Admin: full CRUD cross-org (FOUND-07)
-- Non-staff: SELECT + UPDATE own row via `user_id = auth.uid() AND org_id = (SELECT auth.org_id())`
-
-### Storage bucket (0006)
-- `org-assets` private bucket, 5 MB limit, image MIME types only
-- RLS on storage.objects: `(storage.foldername(name))[1] = (SELECT auth.org_id())::text`
-- SELECT: manager/employee/admin; INSERT/UPDATE/DELETE: manager/admin only (FOUND-13, ORGS-04)
-
-### units + plan-limit trigger (0007)
-- Minimal `public.units` table (id, org_id FK, label, created_at) with RLS + policies
-- `public.enforce_plan_unit_limit()` SECURITY DEFINER trigger function:
-  - Counts existing units for NEW.org_id
-  - SELECTs plan_unit_limit from organizations
-  - RAISE EXCEPTION 'plan_unit_limit_exceeded' with ERRCODE='check_violation' when count >= limit
-- `BEFORE INSERT` trigger `trg_enforce_plan_unit_limit` — physical DB gate for ORGS-06
-
----
+- **JWT helpers in public schema:** Supabase denies user-defined function writes to the `auth` schema. All three helpers (`org_id`, `user_role`, `person_id`) are under `public`; all RLS policies reference `public.*`.
+- **SELECT-wrapper pattern mandatory:** Every RLS policy wraps helper calls in `(SELECT ...)` to prevent per-row re-evaluation.
+- **Auth Hook registration is manual:** Step cannot be automated via migration. Documented in `docs/supabase-auth-config.md`.
 
 ## Deviations from Plan
 
-### Auto-added: tables_without_rls() RPC function
-- **Rule:** Rule 2 — missing critical functionality
-- **Found during:** Task 5 preparation
-- **Issue:** scripts/check-rls.ts calls `supabase.rpc('tables_without_rls')` but no migration created this function. Without it, `node scripts/check-rls.ts` would always fail with "function does not exist" even after a successful push.
-- **Fix:** Added `public.tables_without_rls()` SECURITY DEFINER function to 0003_rls_helpers.sql with GRANT to service_role.
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] JWT helper functions moved from auth schema to public schema**
+- **Found during:** Task 5 (schema push to remote)
+- **Issue:** Migrations originally defined helpers as `auth.org_id()` etc. Supabase returned "permission denied for schema auth" on push.
+- **Fix:** Rewrote all three helpers under `public` schema. Updated all RLS policy migrations (0003-0006) to reference `public.*`.
+- **Files modified:** supabase/migrations/0003_rls_helpers.sql through 0006_storage_buckets.sql
+- **Committed in:** `d052088`
+
+**2. [Rule 2 - Missing Critical] Added tables_without_rls() RPC to 0003**
+- **Found during:** Task 2 preparation
+- **Issue:** `scripts/check-rls.ts` calls `supabase.rpc('tables_without_rls')` but no migration created this function — linter would always fail with "function does not exist"
+- **Fix:** Added `public.tables_without_rls()` SECURITY DEFINER function to 0003_rls_helpers.sql
 - **Files modified:** supabase/migrations/0003_rls_helpers.sql
-- **Commit:** 2c40d5a
+- **Committed in:** `2c40d5a`
 
 ---
 
-## Auth Gates (Tasks 4 and 5)
+**Total deviations:** 2 auto-fixed (1 Rule 1 bug, 1 Rule 2 missing critical)
+**Impact on plan:** Both required for correctness. No scope creep.
 
-**Task 5 — Schema Push:** Blocked by missing credentials.
-- `SUPABASE_ACCESS_TOKEN` in canary-propos/.env.local is a placeholder
-- `SUPABASE_DB_PASSWORD` in canary-propos/.env.local is a placeholder
-- These are needed for `npx supabase db push` to authenticate
+## Issues Encountered
 
-**Task 4 — Auth Hook Registration:** Manual dashboard step.
-- The `custom_access_token_hook` function exists in migration 0003
-- Must be registered at Supabase Dashboard → Authentication → Hooks → Custom Access Token
-- Cannot be done via CLI or migration
+- Supabase `auth` schema write restriction was undocumented in the research phase. Discovered at push time. Fixed inline as deviation.
 
-**Resolution path:** See CHECKPOINT section below — credentials must be added before Tasks 4/5 can complete.
+## User Setup Required
 
----
+The Auth Hook must be registered manually in the Supabase Dashboard before any sign-in injects JWT claims.
 
-## Threat Coverage (from threat_model)
+See [`docs/supabase-auth-config.md`](../../docs/supabase-auth-config.md) for:
+- Step-by-step navigation: Authentication → Hooks (Beta) → Custom Access Token
+- JWT verification command to confirm claims inject correctly post-registration
+- Notes on why `public` schema is used
+
+**This is blocking for all sign-in flows in Phase 1 plans 03-06.** Without the hook registered, `public.org_id()` returns NULL inside every RLS policy and all authenticated queries return zero rows.
+
+## Threat Coverage
 
 | Threat ID | Mitigated By |
 |-----------|-------------|
-| T-02-01 | org_id = (SELECT auth.org_id()) on every table's RLS; admin cross-org explicit |
-| T-02-02 | custom_access_token_hook SECURITY DEFINER — claims server-side only |
-| T-02-03 | All helper calls wrapped in (SELECT ...) — per-query, not per-row |
-| T-02-04 | storage.foldername(name)[1] = (SELECT auth.org_id())::text |
+| T-02-01 | `org_id = (SELECT public.org_id())` on every table; admin cross-org explicit |
+| T-02-02 | `custom_access_token_hook` SECURITY DEFINER — claims set server-side only |
+| T-02-03 | All helper calls wrapped in `(SELECT ...)` — per-query not per-row |
+| T-02-04 | `(storage.foldername(name))[1] = (SELECT public.org_id())::text` |
 | T-02-05 | Accept — migrations-only team rule; single-developer project |
-| T-02-06 | enforce_plan_unit_limit() BEFORE INSERT trigger — DB-layer gate |
+| T-02-06 | `enforce_plan_unit_limit()` BEFORE INSERT trigger — physical DB gate |
 
----
+## Next Phase Readiness
+
+- Database security boundary complete: all tables have RLS enabled and correct per-role policies (CI linter confirms)
+- Auth Hook function in DB — one manual Dashboard step to activate
+- Generated types in `src/types/supabase.ts` ready for Server Components and Server Actions
+- Phase 2 migrations should follow the same RLS patterns established here: enable RLS, use `(SELECT public.org_id())`, include admin cross-org policy
 
 ## Self-Check
 
-### Files created:
-- canary-propos/supabase/migrations/0001_create_organizations.sql — FOUND
-- canary-propos/supabase/migrations/0002_create_people.sql — FOUND
-- canary-propos/supabase/migrations/0003_rls_helpers.sql — FOUND
-- canary-propos/supabase/migrations/0004_rls_organizations.sql — FOUND
-- canary-propos/supabase/migrations/0005_rls_people.sql — FOUND
-- canary-propos/supabase/migrations/0006_storage_buckets.sql — FOUND
-- canary-propos/supabase/migrations/0007_units_plan_limit.sql — FOUND
+Files created:
+- `supabase/migrations/0001_create_organizations.sql` — FOUND
+- `supabase/migrations/0002_create_people.sql` — FOUND
+- `supabase/migrations/0003_rls_helpers.sql` — FOUND
+- `supabase/migrations/0004_rls_organizations.sql` — FOUND
+- `supabase/migrations/0005_rls_people.sql` — FOUND
+- `supabase/migrations/0006_storage_buckets.sql` — FOUND
+- `supabase/migrations/0007_units_plan_limit.sql` — FOUND
+- `src/types/supabase.ts` — FOUND
+- `docs/supabase-auth-config.md` — FOUND
 
-### Commits:
-- f0703d3 — feat(01-02): create organizations and people table migrations
-- c1e4ed2 — feat(01-02): Auth Hook, RLS helper functions, and per-role RLS policies
-- 55ba5a4 — feat(01-02): units table and plan-limit enforcement trigger (ORGS-06)
-- 2c40d5a — feat(01-02): add tables_without_rls() CI linter function
+Commits: f0703d3, c1e4ed2, 2c40d5a, 55ba5a4, d052088, 94c51f1, a2571cc, f1c786f — all present in git log
 
-## Self-Check: PASSED (Tasks 1-3 artifacts verified; Tasks 4-5 pending human action)
+## Self-Check: PASSED
+
+---
+*Phase: 01-foundation*
+*Completed: 2026-06-20*

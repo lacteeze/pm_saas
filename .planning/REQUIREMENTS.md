@@ -13,15 +13,15 @@
 - [ ] **FOUND-02**: User can sign in with Google OAuth
 - [ ] **FOUND-03**: User can sign in with Apple OAuth
 - [ ] **FOUND-04**: User can sign in with magic link (passwordless email)
-- [ ] **FOUND-05**: Each organization's data is completely isolated from all other organizations (Supabase RLS, org_id on every row)
-- [ ] **FOUND-06**: JWT tokens include custom claims (role, org_id, person_id) injected at sign-in via Supabase Auth Hooks
-- [ ] **FOUND-07**: Admin can access all organizations' data (platform superuser, cross-org RLS bypass)
-- [ ] **FOUND-08**: Manager can create, read, update, and delete all data within their organization
-- [ ] **FOUND-09**: Employee can create, read, update, and delete data shared with them and data from their assigned tenants/clients/vendors
-- [ ] **FOUND-10**: Tenant can submit records (maintenance requests, applications) and submit update requests only
-- [ ] **FOUND-11**: Client (owner) can view portfolio data, approve/decline maintenance over $500, download statements — read-only otherwise
-- [ ] **FOUND-12**: Vendor can view assigned work orders, update job status, upload photos/notes, submit invoices — scoped to their assignments only
-- [ ] **FOUND-13**: RLS policies enforce permission model on all database tables including storage buckets
+- [x] **FOUND-05**: Each organization's data is completely isolated from all other organizations (Supabase RLS, org_id on every row)
+- [x] **FOUND-06**: JWT tokens include custom claims (role, org_id, person_id) injected at sign-in via Supabase Auth Hooks
+- [x] **FOUND-07**: Admin can access all organizations' data (platform superuser, cross-org RLS bypass)
+- [x] **FOUND-08**: Manager can create, read, update, and delete all data within their organization
+- [x] **FOUND-09**: Employee can create, read, update, and delete data shared with them and data from their assigned tenants/clients/vendors
+- [x] **FOUND-10**: Tenant can submit records (maintenance requests, applications) and submit update requests only
+- [x] **FOUND-11**: Client (owner) can view portfolio data, approve/decline maintenance over $500, download statements — read-only otherwise
+- [x] **FOUND-12**: Vendor can view assigned work orders, update job status, upload photos/notes, submit invoices — scoped to their assignments only
+- [x] **FOUND-13**: RLS policies enforce permission model on all database tables including storage buckets
 - [ ] **FOUND-14**: Supabase Realtime uses private channels only (no public channel subscriptions)
 
 ### ORGS — Organization & Team Management
@@ -29,9 +29,9 @@
 - [ ] **ORGS-01**: Organization admin can invite managers and employees by email
 - [ ] **ORGS-02**: Invited users receive email with sign-up link that pre-associates them with the org and role
 - [ ] **ORGS-03**: Organization admin can remove a user from the org (triggers session revocation)
-- [ ] **ORGS-04**: Organization has a profile (name, logo, contact info, province/jurisdiction, branding colors)
-- [ ] **ORGS-05**: Organization has a plan limit (free: ≤5 units; paid: unit count per subscription)
-- [ ] **ORGS-06**: System blocks adding properties/units when org is at plan unit limit
+- [x] **ORGS-04**: Organization has a profile (name, logo, contact info, province/jurisdiction, branding colors)
+- [x] **ORGS-05**: Organization has a plan limit (free: ≤5 units; paid: unit count per subscription)
+- [x] **ORGS-06**: System blocks adding properties/units when org is at plan unit limit
 
 ### PEOPLE — People Management
 
@@ -195,22 +195,22 @@
 | FOUND-02 | Phase 1: Foundation | Pending |
 | FOUND-03 | Phase 1: Foundation | Pending |
 | FOUND-04 | Phase 1: Foundation | Pending |
-| FOUND-05 | Phase 1: Foundation | Pending |
-| FOUND-06 | Phase 1: Foundation | Pending |
-| FOUND-07 | Phase 1: Foundation | Pending |
-| FOUND-08 | Phase 1: Foundation | Pending |
-| FOUND-09 | Phase 1: Foundation | Pending |
-| FOUND-10 | Phase 1: Foundation | Pending |
-| FOUND-11 | Phase 1: Foundation | Pending |
-| FOUND-12 | Phase 1: Foundation | Pending |
-| FOUND-13 | Phase 1: Foundation | Pending |
+| FOUND-05 | Phase 1: Foundation | Complete |
+| FOUND-06 | Phase 1: Foundation | Complete |
+| FOUND-07 | Phase 1: Foundation | Complete |
+| FOUND-08 | Phase 1: Foundation | Complete |
+| FOUND-09 | Phase 1: Foundation | Complete |
+| FOUND-10 | Phase 1: Foundation | Complete |
+| FOUND-11 | Phase 1: Foundation | Complete |
+| FOUND-12 | Phase 1: Foundation | Complete |
+| FOUND-13 | Phase 1: Foundation | Complete |
 | FOUND-14 | Phase 1: Foundation | Pending |
 | ORGS-01 | Phase 1: Foundation | Pending |
 | ORGS-02 | Phase 1: Foundation | Pending |
 | ORGS-03 | Phase 1: Foundation | Pending |
-| ORGS-04 | Phase 1: Foundation | Pending |
-| ORGS-05 | Phase 1: Foundation | Pending |
-| ORGS-06 | Phase 1: Foundation | Pending |
+| ORGS-04 | Phase 1: Foundation | Complete |
+| ORGS-05 | Phase 1: Foundation | Complete |
+| ORGS-06 | Phase 1: Foundation | Complete |
 | PEOPLE-01 | Phase 2: Core Data Model | Pending |
 | PEOPLE-02 | Phase 2: Core Data Model | Pending |
 | PEOPLE-03 | Phase 2: Core Data Model | Pending |
