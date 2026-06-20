@@ -10,9 +10,9 @@
 ### FOUNDATION — Auth & Multi-Tenancy
 
 - [ ] **FOUND-01**: User can create an organization account (SaaS sign-up) with email/password
-- [ ] **FOUND-02**: User can sign in with Google OAuth
-- [ ] **FOUND-03**: User can sign in with Apple OAuth
-- [ ] **FOUND-04**: User can sign in with magic link (passwordless email)
+- [x] **FOUND-02**: User can sign in with Google OAuth
+- [x] **FOUND-03**: User can sign in with Apple OAuth
+- [x] **FOUND-04**: User can sign in with magic link (passwordless email)
 - [x] **FOUND-05**: Each organization's data is completely isolated from all other organizations (Supabase RLS, org_id on every row)
 - [x] **FOUND-06**: JWT tokens include custom claims (role, org_id, person_id) injected at sign-in via Supabase Auth Hooks
 - [x] **FOUND-07**: Admin can access all organizations' data (platform superuser, cross-org RLS bypass)
@@ -22,7 +22,7 @@
 - [x] **FOUND-11**: Client (owner) can view portfolio data, approve/decline maintenance over $500, download statements — read-only otherwise
 - [x] **FOUND-12**: Vendor can view assigned work orders, update job status, upload photos/notes, submit invoices — scoped to their assignments only
 - [x] **FOUND-13**: RLS policies enforce permission model on all database tables including storage buckets
-- [ ] **FOUND-14**: Supabase Realtime uses private channels only (no public channel subscriptions)
+- [x] **FOUND-14**: Supabase Realtime uses private channels only (no public channel subscriptions)
 
 ### ORGS — Organization & Team Management
 
@@ -192,9 +192,9 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | FOUND-01 | Phase 1: Foundation | Pending |
-| FOUND-02 | Phase 1: Foundation | Pending |
-| FOUND-03 | Phase 1: Foundation | Pending |
-| FOUND-04 | Phase 1: Foundation | Pending |
+| FOUND-02 | Phase 1: Foundation | Complete |
+| FOUND-03 | Phase 1: Foundation | Complete |
+| FOUND-04 | Phase 1: Foundation | Complete |
 | FOUND-05 | Phase 1: Foundation | Complete |
 | FOUND-06 | Phase 1: Foundation | Complete |
 | FOUND-07 | Phase 1: Foundation | Complete |
@@ -204,7 +204,7 @@
 | FOUND-11 | Phase 1: Foundation | Complete |
 | FOUND-12 | Phase 1: Foundation | Complete |
 | FOUND-13 | Phase 1: Foundation | Complete |
-| FOUND-14 | Phase 1: Foundation | Pending |
+| FOUND-14 | Phase 1: Foundation | Complete |
 | ORGS-01 | Phase 1: Foundation | Pending |
 | ORGS-02 | Phase 1: Foundation | Pending |
 | ORGS-03 | Phase 1: Foundation | Pending |
