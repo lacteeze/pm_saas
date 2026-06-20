@@ -31,8 +31,8 @@ ON public.units
 FOR SELECT
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'employee', 'admin')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'employee', 'admin')
 );
 
 -- SELECT: admin cross-org access (FOUND-07)
@@ -41,7 +41,7 @@ ON public.units
 FOR SELECT
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- INSERT: managers can add units (trigger enforces plan limit before row lands)
@@ -50,8 +50,8 @@ ON public.units
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );
 
 -- UPDATE: managers can update units in their org
@@ -60,12 +60,12 @@ ON public.units
 FOR UPDATE
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 )
 WITH CHECK (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );
 
 -- DELETE: managers can delete units in their org
@@ -74,8 +74,8 @@ ON public.units
 FOR DELETE
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );
 
 -- ============================================================

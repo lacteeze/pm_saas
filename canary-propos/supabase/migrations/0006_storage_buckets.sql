@@ -30,8 +30,8 @@ FOR SELECT
 TO authenticated
 USING (
   bucket_id = 'org-assets'
-  AND (storage.foldername(name))[1] = (SELECT auth.org_id())::text
-  AND (SELECT auth.user_role()) IN ('manager', 'employee', 'admin')
+  AND (storage.foldername(name))[1] = (SELECT public.org_id())::text
+  AND (SELECT public.user_role()) IN ('manager', 'employee', 'admin')
 );
 
 -- INSERT: managers and admins can upload to their org's folder
@@ -41,8 +41,8 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'org-assets'
-  AND (storage.foldername(name))[1] = (SELECT auth.org_id())::text
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  AND (storage.foldername(name))[1] = (SELECT public.org_id())::text
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );
 
 -- UPDATE: managers and admins can replace objects in their org's folder
@@ -52,13 +52,13 @@ FOR UPDATE
 TO authenticated
 USING (
   bucket_id = 'org-assets'
-  AND (storage.foldername(name))[1] = (SELECT auth.org_id())::text
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  AND (storage.foldername(name))[1] = (SELECT public.org_id())::text
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 )
 WITH CHECK (
   bucket_id = 'org-assets'
-  AND (storage.foldername(name))[1] = (SELECT auth.org_id())::text
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  AND (storage.foldername(name))[1] = (SELECT public.org_id())::text
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );
 
 -- DELETE: managers and admins can delete objects in their org's folder
@@ -68,6 +68,6 @@ FOR DELETE
 TO authenticated
 USING (
   bucket_id = 'org-assets'
-  AND (storage.foldername(name))[1] = (SELECT auth.org_id())::text
-  AND (SELECT auth.user_role()) IN ('manager', 'admin')
+  AND (storage.foldername(name))[1] = (SELECT public.org_id())::text
+  AND (SELECT public.user_role()) IN ('manager', 'admin')
 );

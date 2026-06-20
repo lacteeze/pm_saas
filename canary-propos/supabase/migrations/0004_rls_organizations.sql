@@ -14,8 +14,8 @@ ON public.organizations
 FOR SELECT
 TO authenticated
 USING (
-  id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'employee')
+  id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'employee')
 );
 
 -- Admin: SELECT all orgs (cross-org superuser, FOUND-07)
@@ -24,7 +24,7 @@ ON public.organizations
 FOR SELECT
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- Tenants, owners, vendors: SELECT their own org row only
@@ -33,8 +33,8 @@ ON public.organizations
 FOR SELECT
 TO authenticated
 USING (
-  id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('tenant', 'owner', 'vendor')
+  id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('tenant', 'owner', 'vendor')
 );
 
 -- ============================================================
@@ -47,12 +47,12 @@ ON public.organizations
 FOR UPDATE
 TO authenticated
 USING (
-  id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 )
 WITH CHECK (
-  id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 );
 
 -- Admin: UPDATE any org (cross-org)
@@ -61,10 +61,10 @@ ON public.organizations
 FOR UPDATE
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 )
 WITH CHECK (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- ============================================================
@@ -78,7 +78,7 @@ ON public.organizations
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- ============================================================
@@ -91,5 +91,5 @@ ON public.organizations
 FOR DELETE
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );

@@ -46,34 +46,44 @@ GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin
 REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
 
 -- ============================================================
--- JWT helper functions
+-- JWT helper functions (in public schema — auth schema write access denied)
 -- Always call these wrapped in (SELECT ...) inside RLS policies
--- e.g., org_id = (SELECT auth.org_id())
+-- e.g., org_id = (SELECT public.org_id())
 -- This ensures the function is evaluated once per query, not per row (Pitfall 2).
 -- ============================================================
-CREATE OR REPLACE FUNCTION auth.org_id()
+CREATE OR REPLACE FUNCTION public.org_id()
 RETURNS uuid
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = ''
 AS $$
   SELECT (auth.jwt() -> 'app_metadata' ->> 'org_id')::uuid;
 $$;
 
-CREATE OR REPLACE FUNCTION auth.user_role()
+CREATE OR REPLACE FUNCTION public.user_role()
 RETURNS text
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = ''
 AS $$
   SELECT auth.jwt() -> 'app_metadata' ->> 'role';
 $$;
 
-CREATE OR REPLACE FUNCTION auth.person_id()
+CREATE OR REPLACE FUNCTION public.person_id()
 RETURNS uuid
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = ''
 AS $$
   SELECT (auth.jwt() -> 'app_metadata' ->> 'person_id')::uuid;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.org_id TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.user_role TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.person_id TO authenticated, anon;
 
 -- ============================================================
 -- CI linter helper: tables_without_rls()

@@ -15,8 +15,8 @@ ON public.people
 FOR SELECT
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('manager', 'employee')
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('manager', 'employee')
 );
 
 -- Admin: SELECT all people across all orgs (FOUND-07)
@@ -25,7 +25,7 @@ ON public.people
 FOR SELECT
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- Non-staff roles: SELECT their own row only (minimal self-read, FOUND-10/11/12)
@@ -35,8 +35,8 @@ FOR SELECT
 TO authenticated
 USING (
   user_id = auth.uid()
-  AND org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('tenant', 'owner', 'vendor')
+  AND org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('tenant', 'owner', 'vendor')
 );
 
 -- ============================================================
@@ -49,8 +49,8 @@ ON public.people
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 );
 
 -- Admin: INSERT people in any org
@@ -59,7 +59,7 @@ ON public.people
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- ============================================================
@@ -72,12 +72,12 @@ ON public.people
 FOR UPDATE
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 )
 WITH CHECK (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 );
 
 -- Employees: UPDATE within their org (limited; same as manager for schema purposes;
@@ -87,12 +87,12 @@ ON public.people
 FOR UPDATE
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'employee'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'employee'
 )
 WITH CHECK (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'employee'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'employee'
 );
 
 -- Admin: UPDATE any person across all orgs
@@ -101,10 +101,10 @@ ON public.people
 FOR UPDATE
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 )
 WITH CHECK (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
 
 -- Non-staff: UPDATE their own record only (e.g., phone, name)
@@ -114,13 +114,13 @@ FOR UPDATE
 TO authenticated
 USING (
   user_id = auth.uid()
-  AND org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('tenant', 'owner', 'vendor')
+  AND org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('tenant', 'owner', 'vendor')
 )
 WITH CHECK (
   user_id = auth.uid()
-  AND org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) IN ('tenant', 'owner', 'vendor')
+  AND org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) IN ('tenant', 'owner', 'vendor')
 );
 
 -- ============================================================
@@ -133,8 +133,8 @@ ON public.people
 FOR DELETE
 TO authenticated
 USING (
-  org_id = (SELECT auth.org_id())
-  AND (SELECT auth.user_role()) = 'manager'
+  org_id = (SELECT public.org_id())
+  AND (SELECT public.user_role()) = 'manager'
 );
 
 -- Admin: DELETE any person across all orgs
@@ -143,5 +143,5 @@ ON public.people
 FOR DELETE
 TO authenticated
 USING (
-  (SELECT auth.user_role()) = 'admin'
+  (SELECT public.user_role()) = 'admin'
 );
