@@ -10,7 +10,10 @@ function isProtectedPath(pathname: string): boolean {
     pathname.startsWith('/my-home') ||
     pathname.startsWith('/portfolio') ||
     pathname.startsWith('/jobs') ||
-    pathname.startsWith('/admin')
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/onboarding') ||  // CR-04: protect onboarding from unauthed access
+    pathname.startsWith('/people') ||
+    pathname.startsWith('/settings')
   )
 }
 

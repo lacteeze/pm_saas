@@ -132,8 +132,8 @@ export async function createOrganization(formData: {
   return { success: true, orgId: org.id }
 }
 
-// --- updateOrgLogo: update logo_path on an existing org ---
-export async function updateOrgLogo(orgId: string, logoPath: string): Promise<ActionResult> {
+// --- updateOrgLogo: update logo_path — org derived from JWT claims, never user input (CR-03) ---
+export async function updateOrgLogo(logoPath: string): Promise<ActionResult> {
   const supabase = await createClient()
 
   const {
@@ -144,7 +144,13 @@ export async function updateOrgLogo(orgId: string, logoPath: string): Promise<Ac
     return { success: false, error: 'You must be signed in.' }
   }
 
-  const { error } = await supabase
+  // CR-03 fix: derive org_id from JWT claims, never accept it from the caller
+  const orgId = user.app_metadata?.org_id as string | undefined
+  if (!orgId) {
+    return { success: false, error: 'Organisation not found.' }
+  }
+
+  const { error } = await admin
     .from('organizations')
     .update({ logo_path: logoPath })
     .eq('id', orgId)

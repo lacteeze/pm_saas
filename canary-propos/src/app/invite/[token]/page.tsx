@@ -93,13 +93,24 @@ export default function InvitePage() {
       return
     }
 
-    const userId = signUpData.user.id
+    // CR-06 fix: if email confirmation is required, session is null — show "check email" state.
+    // The invite will be linked in /auth/callback after email confirmation.
+    // We store the pending token in localStorage so the callback can complete linkage.
+    if (!signUpData.session) {
+      // Store token for post-confirmation pickup in /auth/callback
+      localStorage.setItem('pending_invite_token', token)
+      setState({
+        status: 'error',
+        message: 'Account created! Check your email to confirm your address, then click the link to finish joining the team.',
+      })
+      return
+    }
 
-    // Link user_id and mark invite accepted — use admin API via server action route
+    // Confirmation not required (e.g. dev mode) — link immediately via authenticated route
     const acceptRes = await fetch('/api/invites/accept', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, userId, firstName, lastName }),
+      body: JSON.stringify({ token, firstName, lastName }),
     })
 
     if (!acceptRes.ok) {

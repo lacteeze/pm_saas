@@ -46,10 +46,12 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
       const role = user?.app_metadata?.role as string | undefined
       const redirectPath = ROLE_REDIRECT_MAP[role ?? ''] ?? '/dashboard'
-      return NextResponse.redirect(new URL(redirectPath, origin))
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? origin  // CR-02 fix
+      return NextResponse.redirect(new URL(redirectPath, appUrl))
     }
   }
 
   // Verification failed — redirect to error page
-  return NextResponse.redirect(new URL('/auth-code-error', origin))
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? origin
+  return NextResponse.redirect(new URL('/auth-code-error', appUrl))
 }

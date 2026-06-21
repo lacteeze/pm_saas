@@ -4,15 +4,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 const bodySchema = z.object({
   token: z.string().uuid('Invalid token format'),
-  userId: z.string().uuid('Invalid user ID'),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
+  // Verify the caller is authenticated — userId comes from their session, not the body
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => cookieStore.getAll(), setAll: (c) => c.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 })
+  }
+
   let body: unknown
   try {
     body = await request.json()
@@ -25,7 +38,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message }, { status: 400 })
   }
 
-  const { token, userId, firstName, lastName } = parsed.data
+  const { token, firstName, lastName } = parsed.data
+  const userId = user.id  // CR-01 fix: always use session userId, never trust body
   const admin = createAdminClient()
 
   // Fetch the invite — must be unaccepted (T-06-02: single-use enforcement)
