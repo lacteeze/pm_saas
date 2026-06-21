@@ -35,28 +35,28 @@
 
 ### PEOPLE — People Management
 
-- [ ] **PEOPLE-01**: Manager can create a person record for any role (tenant, client, vendor, employee)
-- [ ] **PEOPLE-02**: Person record includes: name, email, phone, role(s), associated org, created date
-- [ ] **PEOPLE-03**: Person can be associated with multiple roles (e.g., someone who is both a tenant and a client)
+- [x] **PEOPLE-01**: Manager can create a person record for any role (tenant, client, vendor, employee)
+- [x] **PEOPLE-02**: Person record includes: name, email, phone, role(s), associated org, created date
+- [x] **PEOPLE-03**: Person can be associated with multiple roles (e.g., someone who is both a tenant and a client)
 - [ ] **PEOPLE-04**: Manager can view, edit, and deactivate person records within their org
 
 ### PROPERTIES — Properties & Portfolios
 
-- [ ] **PROP-01**: Manager can create a property record (address, unit type, bedrooms, bathrooms, square footage, amenities, photos)
-- [ ] **PROP-02**: Property record includes province/jurisdiction field for compliance rules
-- [ ] **PROP-03**: Manager can associate a property with an owner (client)
-- [ ] **PROP-04**: Manager can group properties into a portfolio under one owner
+- [x] **PROP-01**: Manager can create a property record (address, unit type, bedrooms, bathrooms, square footage, amenities, photos)
+- [x] **PROP-02**: Property record includes province/jurisdiction field for compliance rules
+- [x] **PROP-03**: Manager can associate a property with an owner (client)
+- [x] **PROP-04**: Manager can group properties into a portfolio under one owner
 - [ ] **PROP-05**: Manager can view a property dashboard showing current tenant, lease status, rent status, open maintenance
-- [ ] **PROP-06**: Manager can upload and manage property photos (stored in org-scoped Supabase Storage bucket)
+- [x] **PROP-06**: Manager can upload and manage property photos (stored in org-scoped Supabase Storage bucket)
 
 ### LEASES — Lease Management
 
-- [ ] **LEASE-01**: Manager can create a lease linking a tenant (person) to a property with term, monthly rent, due date, and deposit amount
+- [x] **LEASE-01**: Manager can create a lease linking a tenant (person) to a property with term, monthly rent, due date, and deposit amount
 - [ ] **LEASE-02**: Manager can view all active, expiring, and expired leases
 - [ ] **LEASE-03**: System displays alerts at 90, 60, and 30 days before lease expiry on manager dashboard
-- [ ] **LEASE-04**: Manager can initiate a lease renewal workflow (generate renewal document, send to tenant, track acceptance)
-- [ ] **LEASE-05**: Lease documents (PDF) can be uploaded and stored per lease record
-- [ ] **LEASE-06**: Tenant can view and download their current lease document from the tenant portal
+- [x] **LEASE-04**: Manager can initiate a lease renewal workflow (generate renewal document, send to tenant, track acceptance)
+- [x] **LEASE-05**: Lease documents (PDF) can be uploaded and stored per lease record
+- [x] **LEASE-06**: Tenant can view and download their current lease document from the tenant portal
 
 ### LISTINGS — Public Listings
 
@@ -211,22 +211,22 @@
 | ORGS-04 | Phase 1: Foundation | Complete |
 | ORGS-05 | Phase 1: Foundation | Complete |
 | ORGS-06 | Phase 1: Foundation | Complete |
-| PEOPLE-01 | Phase 2: Core Data Model | Pending |
-| PEOPLE-02 | Phase 2: Core Data Model | Pending |
-| PEOPLE-03 | Phase 2: Core Data Model | Pending |
+| PEOPLE-01 | Phase 2: Core Data Model | Complete |
+| PEOPLE-02 | Phase 2: Core Data Model | Complete |
+| PEOPLE-03 | Phase 2: Core Data Model | Complete |
 | PEOPLE-04 | Phase 2: Core Data Model | Pending |
-| PROP-01 | Phase 2: Core Data Model | Pending |
-| PROP-02 | Phase 2: Core Data Model | Pending |
-| PROP-03 | Phase 2: Core Data Model | Pending |
-| PROP-04 | Phase 2: Core Data Model | Pending |
+| PROP-01 | Phase 2: Core Data Model | Complete |
+| PROP-02 | Phase 2: Core Data Model | Complete |
+| PROP-03 | Phase 2: Core Data Model | Complete |
+| PROP-04 | Phase 2: Core Data Model | Complete |
 | PROP-05 | Phase 2: Core Data Model | Pending |
-| PROP-06 | Phase 2: Core Data Model | Pending |
-| LEASE-01 | Phase 2: Core Data Model | Pending |
+| PROP-06 | Phase 2: Core Data Model | Complete |
+| LEASE-01 | Phase 2: Core Data Model | Complete |
 | LEASE-02 | Phase 2: Core Data Model | Pending |
 | LEASE-03 | Phase 2: Core Data Model | Pending |
-| LEASE-04 | Phase 2: Core Data Model | Pending |
-| LEASE-05 | Phase 2: Core Data Model | Pending |
-| LEASE-06 | Phase 2: Core Data Model | Pending |
+| LEASE-04 | Phase 2: Core Data Model | Complete |
+| LEASE-05 | Phase 2: Core Data Model | Complete |
+| LEASE-06 | Phase 2: Core Data Model | Complete |
 | LIST-01 | Phase 3: Public Listings | Pending |
 | LIST-02 | Phase 3: Public Listings | Pending |
 | LIST-03 | Phase 3: Public Listings | Pending |

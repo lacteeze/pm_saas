@@ -69,7 +69,7 @@
   5. A tenant can view and download their current lease document from a link — without accessing any other tenant's data
 
 **Plans**: 6 plans
-- [ ] 02-01-PLAN.md — Schema migrations (properties, portfolios, extend units, leases, role migration) + DB push + type regen
+- [x] 02-01-PLAN.md — Schema migrations (properties, portfolios, extend units, leases, role migration) + DB push + type regen
 - [ ] 02-02-PLAN.md — People page Contacts tab + role[] fixes + contact CRUD
 - [ ] 02-03-PLAN.md — Properties list, property detail (tabs), Add Property/Unit forms, photo upload
 - [ ] 02-04-PLAN.md — Leases list + detail, Add Lease form, PDF upload, renewal flag, signed URL action
@@ -253,7 +253,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/6 | In Progress|  |
-| 2. Core Data Model | 0/? | Not started | - |
+| 2. Core Data Model | 1/6 | In Progress|  |
 | 3. Public Listings | 0/? | Not started | - |
 | 4. Payments | 0/? | Not started | - |
 | 5. Maintenance | 0/? | Not started | - |
