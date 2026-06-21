@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      leases: {
+        Row: {
+          created_at: string | null
+          deposit_amount: number
+          document_path: string | null
+          end_date: string
+          id: string
+          monthly_rent: number
+          org_id: string
+          proposed_rent: number | null
+          renewal_status:
+            | Database["public"]["Enums"]["renewal_status_enum"]
+            | null
+          rent_due_day: number
+          start_date: string
+          status: string
+          tenant_id: string
+          unit_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deposit_amount: number
+          document_path?: string | null
+          end_date: string
+          id?: string
+          monthly_rent: number
+          org_id: string
+          proposed_rent?: number | null
+          renewal_status?:
+            | Database["public"]["Enums"]["renewal_status_enum"]
+            | null
+          rent_due_day?: number
+          start_date: string
+          status?: string
+          tenant_id: string
+          unit_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deposit_amount?: number
+          document_path?: string | null
+          end_date?: string
+          id?: string
+          monthly_rent?: number
+          org_id?: string
+          proposed_rent?: number | null
+          renewal_status?:
+            | Database["public"]["Enums"]["renewal_status_enum"]
+            | null
+          rent_due_day?: number
+          start_date?: string
+          status?: string
+          tenant_id?: string
+          unit_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leases_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string | null
@@ -70,7 +152,7 @@ export type Database = {
           last_name: string | null
           org_id: string
           phone: string | null
-          role: string
+          role: string[]
           updated_at: string | null
           user_id: string | null
         }
@@ -87,7 +169,7 @@ export type Database = {
           last_name?: string | null
           org_id: string
           phone?: string | null
-          role: string
+          role: string[]
           updated_at?: string | null
           user_id?: string | null
         }
@@ -104,7 +186,7 @@ export type Database = {
           last_name?: string | null
           org_id?: string
           phone?: string | null
-          role?: string
+          role?: string[]
           updated_at?: string | null
           user_id?: string | null
         }
@@ -118,24 +200,160 @@ export type Database = {
           },
         ]
       }
-      units: {
+      portfolios: {
         Row: {
           created_at: string | null
           id: string
-          label: string | null
+          name: string
           org_id: string
+          owner_id: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          label?: string | null
+          name: string
           org_id: string
+          owner_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          label?: string | null
+          name?: string
           org_id?: string
+          owner_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolios_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolios_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          city: string
+          created_at: string | null
+          id: string
+          org_id: string
+          owner_id: string | null
+          photo_paths: string[] | null
+          portfolio_id: string | null
+          postal_code: string | null
+          property_type: Database["public"]["Enums"]["property_type_enum"]
+          province: string
+          street_address: string
+          updated_at: string | null
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          id?: string
+          org_id: string
+          owner_id?: string | null
+          photo_paths?: string[] | null
+          portfolio_id?: string | null
+          postal_code?: string | null
+          property_type?: Database["public"]["Enums"]["property_type_enum"]
+          province: string
+          street_address: string
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          id?: string
+          org_id?: string
+          owner_id?: string | null
+          photo_paths?: string[] | null
+          portfolio_id?: string | null
+          postal_code?: string | null
+          property_type?: Database["public"]["Enums"]["property_type_enum"]
+          province?: string
+          street_address?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          amenities: string[] | null
+          asking_rent: number | null
+          bathrooms: number
+          bedrooms: number
+          created_at: string | null
+          floor: number | null
+          id: string
+          org_id: string
+          property_id: string | null
+          sq_footage: number | null
+          status: string
+          unit_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          asking_rent?: number | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          floor?: number | null
+          id?: string
+          org_id: string
+          property_id?: string | null
+          sq_footage?: number | null
+          status?: string
+          unit_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: string[] | null
+          asking_rent?: number | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          floor?: number | null
+          id?: string
+          org_id?: string
+          property_id?: string | null
+          sq_footage?: number | null
+          status?: string
+          unit_number?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -143,6 +361,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -164,7 +389,14 @@ export type Database = {
       user_role: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      property_type_enum:
+        | "house"
+        | "duplex"
+        | "apartment_building"
+        | "condo"
+        | "townhouse"
+        | "other"
+      renewal_status_enum: "pending" | "sent" | "accepted" | "declined"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -291,6 +523,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      property_type_enum: [
+        "house",
+        "duplex",
+        "apartment_building",
+        "condo",
+        "townhouse",
+        "other",
+      ],
+      renewal_status_enum: ["pending", "sent", "accepted", "declined"],
+    },
   },
 } as const
