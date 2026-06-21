@@ -4,6 +4,22 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function isPublicListingsPath(pathname: string): boolean {
+  return pathname.startsWith('/listings')
+}
+
+function extractOrgSlug(request: NextRequest): string {
+  const hostname = request.headers.get('host') ?? ''
+  const parts = hostname.split('.')
+  const subdomain = parts.length >= 3 ? parts[0] : null
+
+  if (!subdomain || subdomain === 'localhost' || subdomain === 'www' || subdomain === 'app') {
+    // Localhost / no-subdomain fallback: read ?org= query param
+    return request.nextUrl.searchParams.get('org') ?? ''
+  }
+  return subdomain
+}
+
 function isProtectedPath(pathname: string): boolean {
   return (
     pathname.startsWith('/dashboard') ||
@@ -18,6 +34,16 @@ function isProtectedPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Public listings routes bypass auth entirely — extract org slug and return early
+  if (isPublicListingsPath(pathname)) {
+    const slug = extractOrgSlug(request)
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-org-slug', slug)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -46,7 +72,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
   const role = user?.app_metadata?.role as string | undefined
 
   // Unauthenticated user accessing a protected path → redirect to /login
