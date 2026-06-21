@@ -68,7 +68,13 @@
   4. A manager can create a lease linking a tenant to a property with term, rent, due date, and deposit; the dashboard shows alerts at 90, 60, and 30 days before expiry
   5. A tenant can view and download their current lease document from a link — without accessing any other tenant's data
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 02-01-PLAN.md — Schema migrations (properties, portfolios, extend units, leases, role migration) + DB push + type regen
+- [ ] 02-02-PLAN.md — People page Contacts tab + role[] fixes + contact CRUD
+- [ ] 02-03-PLAN.md — Properties list, property detail (tabs), Add Property/Unit forms, photo upload
+- [ ] 02-04-PLAN.md — Leases list + detail, Add Lease form, PDF upload, renewal flag, signed URL action
+- [ ] 02-05-PLAN.md — Dashboard summary cards + lease expiry alert section
+- [ ] 02-06-PLAN.md — Tenant /my-home lease card + PDF download
 **UI hint**: yes
 
 ---
