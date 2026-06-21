@@ -14,6 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      listings: {
+        Row: {
+          id: string
+          org_id: string
+          unit_id: string
+          listing_title: string
+          listing_description: string | null
+          highlights: string[] | null
+          display_rent: number | null
+          status: 'draft' | 'published' | 'unlisted'
+          available_from: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          unit_id: string
+          listing_title: string
+          listing_description?: string | null
+          highlights?: string[] | null
+          display_rent?: number | null
+          status?: 'draft' | 'published' | 'unlisted'
+          available_from?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          unit_id?: string
+          listing_title?: string
+          listing_description?: string | null
+          highlights?: string[] | null
+          display_rent?: number | null
+          status?: 'draft' | 'published' | 'unlisted'
+          available_from?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: true
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inquiries: {
+        Row: {
+          id: string
+          org_id: string
+          listing_id: string
+          type: 'inquiry' | 'application'
+          name: string
+          email: string
+          phone: string | null
+          move_in_date: string | null
+          budget: number | null
+          note: string | null
+          status: 'new' | 'contacted' | 'closed'
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          listing_id: string
+          type: 'inquiry' | 'application'
+          name: string
+          email: string
+          phone?: string | null
+          move_in_date?: string | null
+          budget?: number | null
+          note?: string | null
+          status?: 'new' | 'contacted' | 'closed'
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          listing_id?: string
+          type?: 'inquiry' | 'application'
+          name?: string
+          email?: string
+          phone?: string | null
+          move_in_date?: string | null
+          budget?: number | null
+          note?: string | null
+          status?: 'new' | 'contacted' | 'closed'
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leases: {
         Row: {
           created_at: string | null
