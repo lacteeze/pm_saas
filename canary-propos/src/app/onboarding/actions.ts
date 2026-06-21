@@ -135,6 +135,7 @@ export async function createOrganization(formData: {
 // --- updateOrgLogo: update logo_path — org derived from JWT claims, never user input (CR-03) ---
 export async function updateOrgLogo(logoPath: string): Promise<ActionResult> {
   const supabase = await createClient()
+  const admin = createAdminClient()
 
   const {
     data: { user },
