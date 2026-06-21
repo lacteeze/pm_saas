@@ -104,6 +104,33 @@ All T-06 mitigations applied:
 - **T-06-03:** All Server Actions check `person.role === 'manager' || 'admin'` before mutating.
 - **T-06-04:** `RESEND_API_KEY` read in `src/lib/email/send.ts` (server-only file, never `NEXT_PUBLIC_`).
 
+## Post-Verification Fixes
+
+Two bugs were caught and fixed during the human end-to-end verification pass (Task 3 checkpoint).
+
+**3. [Rule 1 - Bug] Root / served Next.js starter page instead of redirecting to /login**
+- **Found during:** Task 3 human verification
+- **Issue:** `src/app/page.tsx` still contained the default Next.js scaffold content; navigating to `/` showed the starter template instead of the auth flow.
+- **Fix:** Replaced `page.tsx` with a Server Component that calls `redirect('/login')`.
+- **Files modified:** `canary-propos/src/app/page.tsx`
+- **Committed in:** 64fa7fd
+
+**4. [Rule 1 - Bug] Onboarding "Something went wrong" on invite/org-creation step**
+- **Found during:** Task 3 human verification — org creation succeeded in DB but the page errored post-creation
+- **Root cause (two-part):**
+  1. The org-creation Server Action used the user client for bootstrap inserts into `people` and `organizations`, but newly-signed-up users have no JWT claims yet (no `org_id` or `role` in the token) — RLS rejected the inserts.
+  2. After org creation, the onboarding flow called `router.push('/dashboard')` (client-side navigation), but JWT claims had not yet been refreshed — the new session still lacked `org_id`, causing dashboard auth guards to fail.
+- **Fix (two commits):**
+  - `62e8b6d`: Switched org bootstrap inserts to `createAdminClient()` to bypass RLS for the initial `people` + `organizations` rows.
+  - `94877f6`: Immediately refresh session claims after org creation using `supabase.auth.refreshSession()`, then use `window.location.href = '/dashboard'` hard redirect (not `router.push`) to force a full session reload before hitting dashboard guards.
+- **Files modified:** `canary-propos/src/app/(onboarding)/onboarding/actions.ts`
+- **Committed in:** 62e8b6d, 94877f6
+
+---
+
+**Total deviations:** 4 auto-fixed (2 TypeScript/type bugs pre-verification, 2 runtime bugs post-verification)
+**Impact on plan:** All fixes necessary for correctness. End-to-end journey verified and approved by user.
+
 ## Self-Check: PASSED
 
 Key files verified present:
@@ -118,7 +145,13 @@ Key files verified present:
 - canary-propos/src/app/(manager)/settings/page.tsx — FOUND
 - canary-propos/src/components/onboarding/SetupBanner.tsx — FOUND
 - canary-propos/src/app/(manager)/dashboard/page.tsx — FOUND (modified)
+- canary-propos/src/app/page.tsx — FOUND (redirect to /login)
 
 Commits verified:
 - 3da3e22 — feat(01-06): invite flow — email templates, send utility, inviteUser action, accept route
 - ccf90a1 — feat(01-06): people list, session revocation, org settings, setup banner
+- 64fa7fd — fix(01-06): redirect root / to /login
+- 62e8b6d — fix(01-06): use admin client for org bootstrap
+- 94877f6 — fix(01-06): inject JWT claims immediately after org creation; hard redirect to dashboard
+
+Human verification: APPROVED — signup, onboarding, org creation, and dashboard landing all confirmed working end-to-end.

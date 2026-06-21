@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-21T00:30:34.647Z"
+last_updated: "2026-06-21T00:54:31.707Z"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
 # Canary PropOS — Project State
 
-**Last updated:** 2026-06-20
-**Session:** Plan 01-05 complete — sign-in page (4 auth methods), OAuth/magic-link callbacks, 5-step onboarding wizard, org-creation Server Action. Next: Plan 01-06.
+**Last updated:** 2026-06-21
+**Session:** Plan 01-06 complete — team management (invite flow, people list, session revocation, org settings, setup banner). Post-verification fixes: root redirect /login; admin client for org bootstrap; hard redirect post-org-creation to refresh JWT claims. Phase 01 Foundation verified end-to-end by user. Next: Phase 02 — Core Data Model.
 
 ---
 
@@ -94,6 +94,9 @@ Phase 1: [▓▓░░░░░░░░░░░░░░░░░░] 10% (2/2
 - **Payments:** Dual cost fields — `vendor_cost` (to vendor) + `billed_amount` (to owner); markup invisible to owners/tenants
 - **Statements:** Append-only PDF snapshots stored in Supabase Storage; immutable after generation
 - **Maintenance state machine:** `draft → submitted → assigned → in_progress → pending_approval → approved → completed → closed` — enforced server-side, no state skipping
+- **Org bootstrap inserts:** Must use `createAdminClient()` — new users have no JWT claims yet, so user-client inserts are rejected by RLS
+- **Post-org-creation redirect:** Use `window.location.href` (hard redirect), not `router.push` — forces full session reload so refreshed JWT claims (with org_id/role) are available before dashboard auth guards fire
+- **Session revocation:** `createAdminClient().auth.admin.signOut(userId, 'global')` on user removal — immediately invalidates all sessions (D-11)
 
 ### Open Decisions
 
