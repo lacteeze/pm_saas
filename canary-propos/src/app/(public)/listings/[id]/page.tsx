@@ -1,19 +1,13 @@
 // src/app/(public)/listings/[id]/page.tsx
 // Public listing detail page — shows full listing info with inquiry and application forms.
 // Unauthenticated access. Org resolved from ?org=<slug> query param (D-05).
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { InquiryForm } from '@/components/listings/InquiryForm'
 import { ApplicationForm } from '@/components/listings/ApplicationForm'
-
-function createAnonClient() {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+import { createPublicClient } from '@/lib/supabase/public'
+import { getOrgBySlug } from '@/lib/orgs'
+import { headers } from 'next/headers'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -22,11 +16,17 @@ interface PageProps {
 
 export default async function ListingDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  const { org: orgSlug } = await searchParams
+  const { org: orgSlugParam } = await searchParams
 
-  const supabase = createAnonClient()
+  // Resolve org from x-org-slug header (set by middleware from subdomain) or ?org= param
+  const headersList = await headers()
+  const orgSlug = headersList.get('x-org-slug') || orgSlugParam || ''
+  const org = await getOrgBySlug(orgSlug)
+  if (!org) notFound()
 
-  // Fetch listing with unit + property data
+  const supabase = createPublicClient()
+
+  // Fetch listing with unit + property data — scoped to org for multi-tenant safety (T-03-11)
   const { data: listing } = await supabase
     .from('listings')
     .select(`
@@ -53,6 +53,7 @@ export default async function ListingDetailPage({ params, searchParams }: PagePr
       )
     `)
     .eq('id', id)
+    .eq('org_id', org.id)
     .eq('status', 'published')
     .single()
 

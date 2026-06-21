@@ -85,7 +85,7 @@ export async function createListing(data: {
     highlights: parsed.data.highlights.length > 0 ? parsed.data.highlights : null,
     display_rent: parsed.data.display_rent ?? null,
     available_from: parsed.data.available_from ?? null,
-    listing_status: parsed.data.status,
+    status: parsed.data.status,
   })
 
   if (error) {
@@ -156,7 +156,7 @@ export async function updateListing(
       highlights: parsed.data.highlights.length > 0 ? parsed.data.highlights : null,
       display_rent: parsed.data.display_rent ?? null,
       available_from: parsed.data.available_from ?? null,
-      listing_status: parsed.data.status,
+      status: parsed.data.status,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
