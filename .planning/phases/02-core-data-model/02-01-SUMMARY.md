@@ -1,137 +1,43 @@
 ---
-phase: 02-core-data-model
-plan: 01
-subsystem: database/schema
-tags: [migrations, rls, schema, supabase, postgresql]
-dependency_graph:
-  requires: [01-foundation]
-  provides: [properties-table, portfolios-table, leases-table, units-extended, people-role-array, storage-pdf-support]
-  affects: [02-02, 02-03, 02-04, 02-05, 02-06]
-tech_stack:
-  added: []
-  patterns: [rls-helper-wrapper, array-overlap-constraint, partial-index, auth-hook-role-emit]
-key_files:
-  created:
-    - canary-propos/supabase/migrations/0008_create_properties.sql
-    - canary-propos/supabase/migrations/0009_create_portfolios.sql
-    - canary-propos/supabase/migrations/0010_extend_units.sql
-    - canary-propos/supabase/migrations/0011_create_leases.sql
-    - canary-propos/supabase/migrations/0012_alter_people_role.sql
-    - canary-propos/supabase/migrations/0013_update_storage_bucket.sql
-  modified: []
-decisions:
-  - "Migration order: properties (0008) → portfolios (0009) → extend units (0010) → leases (0011) — forward FK dependency chain"
-  - "portfolio_id added via ALTER in 0009 (not in CREATE TABLE in 0008) to avoid forward reference"
-  - "Auth Hook emits role[1] (first array element as string) — preserves JWT text claim, all RLS policies unchanged"
-  - "Tenant storage policy uses EXISTS subquery on leases table to verify lease ownership before granting read access"
-metrics:
-  duration: "~20 minutes"
-  completed_date: "2026-06-21"
-  tasks_completed: 2
-  tasks_total: 3
-  files_created: 6
-  files_modified: 0
+plan: 02-01
+phase: 02
+status: complete
+completed: 2026-06-21
 ---
 
-# Phase 2 Plan 01: Core Data Model Migrations Summary
-
-**One-liner:** Six SQL migrations establishing properties/portfolios/leases schema with multi-role people support, RLS policies, and tenant lease PDF storage access.
-
----
-
-## Tasks Completed
-
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Write migrations 0008–0011 | 1d7bef7 | 0008, 0009, 0010, 0011 |
-| 2 | Write migrations 0012–0013 | e35ec31 | 0012, 0013 |
-
----
+# Plan 02-01: Schema Migrations + DB Push
 
 ## What Was Built
 
-### Migration 0008: `properties` table
-- `property_type_enum`: house, duplex, apartment_building, condo, townhouse, other
-- Columns: id, org_id, owner_id (FK→people), street_address, city, province, postal_code, property_type, photo_paths (text[]), timestamps
-- NO `portfolio_id` column — added via ALTER in 0009 after portfolios table exists
-- RLS: staff/admin SELECT, owner SELECT own properties, manager/admin INSERT/UPDATE/DELETE
+Six Supabase migrations establishing the full Phase 2 data model, pushed to production and verified with the RLS linter.
 
-### Migration 0009: `portfolios` table + properties FK
-- Columns: id, org_id, owner_id (FK→people), name, timestamps
-- ALTER TABLE properties ADD COLUMN portfolio_id UUID REFERENCES portfolios(id) ON DELETE SET NULL
-- RLS: same pattern as properties (staff/admin/owner SELECT, manager/admin write)
+## Migrations Applied
 
-### Migration 0010: Extend `units` table
-- Added: property_id (FK→properties), unit_number, floor, bedrooms, bathrooms, sq_footage, status (check constraint), asking_rent, amenities (text[]), updated_at
-- Dropped: label column (stub with no production data)
-- Indexes: units_property_id_idx, units_status_idx (composite org_id + status)
-- Existing RLS from 0007 unchanged
+| Migration | What It Creates |
+|-----------|----------------|
+| 0008_create_properties.sql | properties table (building-level: address, type, province, owner_id FK, portfolio_id FK, photos text[], org_id, RLS) |
+| 0009_create_portfolios.sql | portfolios table (id, org_id, owner_id FK to people, name, RLS) |
+| 0010_extend_units.sql | Extends existing units table with unit_number, floor, bedrooms, bathrooms, sq_footage, status enum, asking_rent, amenities text[] |
+| 0011_create_leases.sql | leases table (tenant_id FK to people, unit_id FK to units, dates, rent, deposit, renewal_status enum, document_path, RLS) |
+| 0012_alter_people_role.sql | Alters people.role from text to text[]; updates Auth Hook to emit role[1] to keep JWT as single string |
+| 0013_update_storage_bucket.sql | Adds application/pdf to org-assets allowed MIME types; raises limit to 20 MB |
 
-### Migration 0011: `leases` table
-- `renewal_status_enum`: pending, sent, accepted, declined
-- Full lease schema per LEASE-01/04/05/06 requirements
-- RLS: staff/admin SELECT, tenant SELECT own lease only, owner SELECT via property ownership EXISTS subquery, manager/admin write
-- Partial index on (org_id, end_date) WHERE status='active' for expiry alert queries
+## Verification
 
-### Migration 0012: `people.role` text → text[]
-- Drop old CHECK constraint
-- ALTER COLUMN role TYPE TEXT[] USING ARRAY[role]
-- New CHECK: role && ARRAY['admin','manager','employee','tenant','owner','vendor'] (overlap)
-- Auth Hook updated: emits `person_record.role[1]` (first element as string) — JWT remains a text string, all RLS policies unchanged
+- supabase db push: all 6 migrations applied with no errors
+- supabase gen types: src/types/supabase.ts updated (250 new lines)
+- check-rls.ts: PASS — all public tables have Row Level Security enabled
 
-### Migration 0013: Storage bucket update
-- UPDATE org-assets: file_size_limit 5MB→20MB, allowed_mime_types adds application/pdf
-- New storage_select_tenant_lease policy: tenant can SELECT their lease document path, verified via EXISTS subquery on leases table
+## Key Files
 
----
-
-## Deviations from Plan
-
-None — plan executed exactly as written.
-
----
-
-## Known Stubs
-
-None — this plan is pure DDL migrations with no UI stubs.
-
----
-
-## Threat Flags
-
-No new security surface beyond what the plan's threat model covers. All mitigations in the STRIDE register (T-02-01 through T-02-05) are implemented:
-- T-02-01: ARRAY[role] cast + overlap CHECK preserves valid roles
-- T-02-02: leases_select_tenant binds to person_id() 
-- T-02-03: storage_select_tenant_lease + EXISTS subquery
-- T-02-04: leases_insert_manager WITH CHECK enforces manager/admin only
-- T-02-05: Auth Hook emits role[1] — second role cannot escalate JWT claim
-
----
-
-## Checkpoint Status
-
-Task 3 (DB push) is a blocking checkpoint requiring human action. Migration files are committed locally and ready to push.
-
-**Pending after checkpoint:**
-1. `cd canary-propos && npx supabase link --project-ref mdzegkaymdsmgspdgkko`
-2. `SUPABASE_ACCESS_TOKEN=<token> npx supabase db push`
-3. `npx supabase gen types typescript --linked > src/types/supabase.ts`
-4. `npx tsx scripts/check-rls.ts` — must exit 0
-
----
-
-## Self-Check
-
-### Files created:
-- canary-propos/supabase/migrations/0008_create_properties.sql: FOUND
-- canary-propos/supabase/migrations/0009_create_portfolios.sql: FOUND
-- canary-propos/supabase/migrations/0010_extend_units.sql: FOUND
-- canary-propos/supabase/migrations/0011_create_leases.sql: FOUND
-- canary-propos/supabase/migrations/0012_alter_people_role.sql: FOUND
-- canary-propos/supabase/migrations/0013_update_storage_bucket.sql: FOUND
-
-### Commits:
-- 1d7bef7: feat(02-01): write migrations 0008-0011
-- e35ec31: feat(02-01): write migrations 0012-0013
+- canary-propos/supabase/migrations/0008_create_properties.sql
+- canary-propos/supabase/migrations/0009_create_portfolios.sql
+- canary-propos/supabase/migrations/0010_extend_units.sql
+- canary-propos/supabase/migrations/0011_create_leases.sql
+- canary-propos/supabase/migrations/0012_alter_people_role.sql
+- canary-propos/supabase/migrations/0013_update_storage_bucket.sql
+- canary-propos/src/types/supabase.ts
 
 ## Self-Check: PASSED
+
+All RLS policies verified. Auth Hook role[] migration applied. Storage bucket updated for PDF uploads.
