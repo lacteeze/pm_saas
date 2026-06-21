@@ -1,7 +1,7 @@
 // src/components/leases/ExpiryAlertCallout.tsx
-// Lease expiry alert callout — groups leases into 3 urgency buckets (UI-SPEC §Component Specifications)
+// Lease expiry alert section — groups expiring leases into urgency buckets (LEASE-03)
 
-interface ExpiryLease {
+interface ExpiringLease {
   id: string
   tenantName: string
   propertyUnit: string
@@ -10,7 +10,7 @@ interface ExpiryLease {
 }
 
 interface ExpiryAlertCalloutProps {
-  leases: ExpiryLease[]
+  leases: ExpiringLease[]
 }
 
 interface BucketConfig {
@@ -22,8 +22,8 @@ interface BucketConfig {
   badgeText: string
 }
 
-const BUCKETS: Record<'critical' | 'warning' | 'notice', BucketConfig> = {
-  critical: {
+const BUCKETS: Record<string, BucketConfig> = {
+  urgent: {
     label: 'Expiring within 30 days',
     bg: 'bg-red-50',
     border: 'border-red-200',
@@ -50,42 +50,43 @@ const BUCKETS: Record<'critical' | 'warning' | 'notice', BucketConfig> = {
 }
 
 export function ExpiryAlertCallout({ leases }: ExpiryAlertCalloutProps) {
-  const critical = leases.filter((l) => l.daysUntilExpiry <= 30)
+  const urgent = leases.filter((l) => l.daysUntilExpiry <= 30)
   const warning = leases.filter((l) => l.daysUntilExpiry > 30 && l.daysUntilExpiry <= 60)
   const notice = leases.filter((l) => l.daysUntilExpiry > 60 && l.daysUntilExpiry <= 90)
 
-  const groups: Array<{ key: 'critical' | 'warning' | 'notice'; items: ExpiryLease[] }> = [
-    { key: 'critical', items: critical },
-    { key: 'warning', items: warning },
-    { key: 'notice', items: notice },
+  const groups: Array<{ key: string; leases: ExpiringLease[] }> = [
+    { key: 'urgent', leases: urgent },
+    { key: 'warning', leases: warning },
+    { key: 'notice', leases: notice },
   ]
 
-  const hasAny = critical.length > 0 || warning.length > 0 || notice.length > 0
-  if (!hasAny) return null
+  const nonEmpty = groups.filter((g) => g.leases.length > 0)
+  if (nonEmpty.length === 0) return null
 
   return (
-    <div className="mb-6 space-y-3">
-      {groups.map(({ key, items }) => {
-        if (items.length === 0) return null
+    <div className="space-y-3">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+        Lease Expiry Alerts
+      </h2>
+      {nonEmpty.map(({ key, leases: groupLeases }) => {
         const cfg = BUCKETS[key]
         return (
           <div
             key={key}
-            className={`rounded-lg border ${cfg.border} ${cfg.bg} px-4 py-3`}
+            className={`rounded-xl border ${cfg.border} ${cfg.bg} p-4`}
           >
-            <p className={`mb-2 text-sm font-semibold ${cfg.text}`}>
-              {cfg.label} ({items.length})
+            <p className={`mb-3 text-xs font-semibold uppercase tracking-wide ${cfg.text}`}>
+              {cfg.label}
             </p>
-            <ul className="space-y-1">
-              {items.map((lease) => (
-                <li key={lease.id} className="flex items-center justify-between text-sm">
-                  <span className={cfg.text}>
-                    {lease.tenantName} — {lease.propertyUnit}
-                  </span>
+            <ul className="space-y-2">
+              {groupLeases.map((lease) => (
+                <li key={lease.id} className="flex items-center justify-between gap-4">
+                  <span className="text-sm font-medium text-stone-900">{lease.tenantName}</span>
+                  <span className="text-xs text-stone-500">{lease.propertyUnit}</span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${cfg.badgeBg} ${cfg.badgeText}`}
+                    className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${cfg.badgeBg} ${cfg.badgeText}`}
                   >
-                    {lease.daysUntilExpiry}d left · {lease.endDate}
+                    {lease.daysUntilExpiry}d left
                   </span>
                 </li>
               ))}
