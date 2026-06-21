@@ -1,72 +1,27 @@
 ---
-phase: 03-public-listings
-plan: "01"
-subsystem: database
-tags: [migrations, rls, listings, inquiries, schema]
-dependency_graph:
-  requires: [02-01]
-  provides: [listings-table, inquiries-table]
-  affects: [03-02, 03-03, 03-04]
-tech_stack:
-  added: []
-  patterns: [rls-org-scoped, rls-anon-insert, enum-types, updated-at-trigger]
-key_files:
-  created:
-    - canary-propos/supabase/migrations/0014_create_listings.sql
-    - canary-propos/supabase/migrations/0015_create_inquiries.sql
-  modified: []
-decisions:
-  - "Used (SELECT public.org_id()) subquery pattern matching existing 0008 migrations rather than jwt_org_id() referenced in plan — actual helper is org_id() not jwt_org_id()"
-  - "set_updated_at() trigger function defined inline in 0014 (not previously defined in schema)"
-  - "anon INSERT on inquiries uses WITH CHECK (true) — org_id integrity delegated to Server Action per T-03-02 design"
-  - "Added employee role to staff SELECT policies for both tables — matches 0008 pattern"
-metrics:
-  duration: "~10 minutes"
-  completed: "2026-06-21"
-  tasks_completed: 2
-  tasks_total: 3
-  files_created: 2
-  files_modified: 0
+plan: 03-01
+phase: 03
+status: complete
+completed: 2026-06-21
 ---
 
-# Phase 03 Plan 01: Listings and Inquiries Schema Migrations Summary
+# Plan 03-01: Schema Migrations + DB Push
 
-Two Supabase migration files written for listings table (status enum, RLS for managers + anon published-only SELECT) and inquiries table (dual enums, RLS for managers + anon INSERT-only), following established 0008 patterns.
+## What Was Built
 
-## Tasks Completed
+Two Supabase migrations adding the listings and inquiries tables, pushed to production with all RLS policies verified.
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Write 0014_create_listings.sql | eb48350 | canary-propos/supabase/migrations/0014_create_listings.sql |
-| 2 | Write 0015_create_inquiries.sql | c63e34d | canary-propos/supabase/migrations/0015_create_inquiries.sql |
+## Migrations Applied
 
-## Task 3: Pending — DB Push (checkpoint)
+| Migration | What It Creates |
+|-----------|----------------|
+| 0014_create_listings.sql | listings table (unit_id FK unique, org_id, listing_title, listing_description, highlights text[], display_rent, listing_status enum draft/published/unlisted, available_from, timestamps, RLS: managers full CRUD + anon SELECT published-only) |
+| 0015_create_inquiries.sql | inquiries table (listing_id FK, org_id, inquiry_type enum inquiry/application, name, email, phone, move_in_date, budget, note, inquiry_status enum new/contacted/closed, created_at, RLS: managers SELECT/UPDATE + anon INSERT only) |
 
-Task 3 requires running `supabase db push` against the linked project, regenerating TypeScript types, and running the RLS linter. This is a human checkpoint — see Checkpoint Details below.
+## Verification
 
-## Deviations from Plan
-
-### Auto-fixed Issues
-
-**1. [Rule 1 - Bug] Corrected RLS helper function name**
-- **Found during:** Task 1
-- **Issue:** Plan referenced `jwt_org_id()` but the actual helper defined in 0003_rls_helpers.sql (and used consistently in 0008) is `public.org_id()`. Using the wrong name would cause migration failure.
-- **Fix:** Used `(SELECT public.org_id())` and `(SELECT public.user_role())` matching the 0008 pattern exactly.
-- **Files modified:** 0014_create_listings.sql, 0015_create_inquiries.sql
-
-## Known Stubs
-
-None — migration files are complete DDL. No UI or data-wiring stubs present.
-
-## Threat Flags
-
-| Flag | File | Description |
-|------|------|-------------|
-| threat_flag: anon-insert | 0015_create_inquiries.sql | anon INSERT on inquiries with WITH CHECK (true) — org_id integrity delegated to Server Action; must be enforced in 03-03 plan |
+- supabase db push: both migrations applied with no errors
+- supabase gen types: src/types/supabase.ts updated with Tables['listings'] and Tables['inquiries']
+- check-rls.ts: PASS — all public tables have Row Level Security enabled
 
 ## Self-Check: PASSED
-
-- [x] 0014_create_listings.sql exists at canary-propos/supabase/migrations/0014_create_listings.sql
-- [x] 0015_create_inquiries.sql exists at canary-propos/supabase/migrations/0015_create_inquiries.sql
-- [x] Commit eb48350 exists (0014)
-- [x] Commit c63e34d exists (0015)
