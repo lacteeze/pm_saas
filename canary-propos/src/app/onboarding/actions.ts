@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CANADIAN_PROVINCES } from '@/lib/constants/provinces'
 
 // --- Zod schemas for server-side validation (T-05-03) ---
@@ -41,7 +42,11 @@ export async function createOrganization(formData: {
   logoPath?: string | null
   inviteEmail?: string | null
 }): Promise<ActionResult> {
+  // Use user client only to verify the session — inserts use admin client
+  // because new users have no JWT claims yet (Auth Hook needs a people row to inject claims,
+  // but we haven't created one yet — classic chicken-and-egg bootstrap).
   const supabase = await createClient()
+  const admin = createAdminClient()
 
   // Verify user is authenticated
   const {
@@ -77,15 +82,14 @@ export async function createOrganization(formData: {
   const baseSlug = slugify(formData.name)
   const slug = `${baseSlug}-${Date.now().toString(36)}`
 
-  // Insert organization
-  const { data: org, error: orgError } = await supabase
+  // Insert organization via admin client (bypasses RLS for bootstrap — user has no claims yet)
+  const { data: org, error: orgError } = await admin
     .from('organizations')
     .insert({
       name: formData.name.trim(),
       slug,
       province: formData.province,
       logo_path: formData.logoPath ?? null,
-      // setup_completed_at: set only when no steps were skipped (D-02)
       setup_completed_at: hasSkippedOptionalSteps ? null : new Date().toISOString(),
     })
     .select('id')
@@ -98,8 +102,9 @@ export async function createOrganization(formData: {
     }
   }
 
-  // Insert manager people row (FOUND-01)
-  const { error: personError } = await supabase.from('people').insert({
+  // Insert manager people row via admin client (FOUND-01)
+  // After this insert, the Auth Hook will inject org_id + role into JWT on next sign-in
+  const { error: personError } = await admin.from('people').insert({
     user_id: user.id,
     org_id: org.id,
     role: 'manager',
