@@ -26,9 +26,9 @@
 
 ### ORGS — Organization & Team Management
 
-- [ ] **ORGS-01**: Organization admin can invite managers and employees by email
-- [ ] **ORGS-02**: Invited users receive email with sign-up link that pre-associates them with the org and role
-- [ ] **ORGS-03**: Organization admin can remove a user from the org (triggers session revocation)
+- [x] **ORGS-01**: Organization admin can invite managers and employees by email
+- [x] **ORGS-02**: Invited users receive email with sign-up link that pre-associates them with the org and role
+- [x] **ORGS-03**: Organization admin can remove a user from the org (triggers session revocation)
 - [x] **ORGS-04**: Organization has a profile (name, logo, contact info, province/jurisdiction, branding colors)
 - [x] **ORGS-05**: Organization has a plan limit (free: ≤5 units; paid: unit count per subscription)
 - [x] **ORGS-06**: System blocks adding properties/units when org is at plan unit limit
@@ -205,9 +205,9 @@
 | FOUND-12 | Phase 1: Foundation | Complete |
 | FOUND-13 | Phase 1: Foundation | Complete |
 | FOUND-14 | Phase 1: Foundation | Complete |
-| ORGS-01 | Phase 1: Foundation | Pending |
-| ORGS-02 | Phase 1: Foundation | Pending |
-| ORGS-03 | Phase 1: Foundation | Pending |
+| ORGS-01 | Phase 1: Foundation | Complete |
+| ORGS-02 | Phase 1: Foundation | Complete |
+| ORGS-03 | Phase 1: Foundation | Complete |
 | ORGS-04 | Phase 1: Foundation | Complete |
 | ORGS-05 | Phase 1: Foundation | Complete |
 | ORGS-06 | Phase 1: Foundation | Complete |
