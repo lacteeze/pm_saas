@@ -62,7 +62,7 @@ export async function inviteUser(formData: {
   }
 
   // Authz: only manager/admin can invite (ORGS-01, T-06-03)
-  if (ctx.person.role !== 'manager' && ctx.person.role !== 'admin') {
+  if (!ctx.person.role?.includes('manager') && !ctx.person.role?.includes('admin')) {
     return { success: false, error: 'Only managers can invite team members.' }
   }
 
@@ -85,7 +85,7 @@ export async function inviteUser(formData: {
       {
         org_id: orgId,
         email,
-        role,
+        role: [role],
         first_name: firstName ?? null,
         invite_token: inviteToken,
         invite_sent_at: new Date().toISOString(),
@@ -161,7 +161,7 @@ export async function removeUserFromOrg(targetPersonId: string): Promise<ActionR
   }
 
   // Authz: only manager/admin (T-06-03)
-  if (ctx.person.role !== 'manager' && ctx.person.role !== 'admin') {
+  if (!ctx.person.role?.includes('manager') && !ctx.person.role?.includes('admin')) {
     return { success: false, error: 'Only managers can remove team members.' }
   }
 

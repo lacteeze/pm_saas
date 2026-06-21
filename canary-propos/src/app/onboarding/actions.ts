@@ -107,7 +107,7 @@ export async function createOrganization(formData: {
   const { error: personError } = await admin.from('people').insert({
     user_id: user.id,
     org_id: org.id,
-    role: 'manager',
+    role: ['manager'],
     email: user.email ?? '',
     invite_accepted_at: new Date().toISOString(),
   })
