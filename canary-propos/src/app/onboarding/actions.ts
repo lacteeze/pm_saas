@@ -119,6 +119,16 @@ export async function createOrganization(formData: {
     }
   }
 
+  // Immediately inject JWT claims into app_metadata so the user can access /dashboard
+  // without needing to sign out and back in (Auth Hook fires on sign-in, not on creation).
+  await admin.auth.admin.updateUserById(user.id, {
+    app_metadata: {
+      role: 'manager',
+      org_id: org.id,
+      person_id: null, // will be populated on next sign-in via Auth Hook lookup
+    },
+  })
+
   return { success: true, orgId: org.id }
 }
 
