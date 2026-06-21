@@ -91,7 +91,13 @@
   4. A visitor can complete and submit a rental application through the listing page
   5. A manager can publish, unpublish, or edit a listing from the manager portal and changes are reflected live on the public page
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 03-01-PLAN.md — Schema migrations (listings + inquiries tables, RLS) + DB push + type regen
+- [ ] 03-02-PLAN.md — Subdomain middleware extension + public Supabase client helper
+- [ ] 03-03-PLAN.md — Manager listing CRUD (Listings tab on /properties/[id])
+- [ ] 03-04-PLAN.md — Public listings browse page (/listings) + listing detail page (/listings/[id])
+- [ ] 03-05-PLAN.md — Inquiry + application forms + server actions + manager email notification
+- [ ] 03-06-PLAN.md — Manager dashboard inquiry count card + /inquiries list page
 **UI hint**: yes
 
 ---
@@ -254,7 +260,7 @@
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/6 | In Progress|  |
 | 2. Core Data Model | 1/6 | In Progress|  |
-| 3. Public Listings | 0/? | Not started | - |
+| 3. Public Listings | 0/6 | Not started | - |
 | 4. Payments | 0/? | Not started | - |
 | 5. Maintenance | 0/? | Not started | - |
 | 6. Tenant Portal | 0/? | Not started | - |
