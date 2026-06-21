@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      inquiries: {
+        Row: {
+          budget: number | null
+          created_at: string
+          email: string
+          id: string
+          listing_id: string
+          move_in_date: string | null
+          name: string
+          note: string | null
+          org_id: string
+          phone: string | null
+          status: Database["public"]["Enums"]["inquiry_status"]
+          type: Database["public"]["Enums"]["inquiry_type"]
+        }
+        Insert: {
+          budget?: number | null
+          created_at?: string
+          email: string
+          id?: string
+          listing_id: string
+          move_in_date?: string | null
+          name: string
+          note?: string | null
+          org_id: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["inquiry_status"]
+          type?: Database["public"]["Enums"]["inquiry_type"]
+        }
+        Update: {
+          budget?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          listing_id?: string
+          move_in_date?: string | null
+          name?: string
+          note?: string | null
+          org_id?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["inquiry_status"]
+          type?: Database["public"]["Enums"]["inquiry_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leases: {
         Row: {
           created_at: string | null
@@ -91,6 +151,63 @@ export type Database = {
             foreignKeyName: "leases_unit_id_fkey"
             columns: ["unit_id"]
             isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listings: {
+        Row: {
+          available_from: string | null
+          created_at: string
+          display_rent: number | null
+          highlights: string[] | null
+          id: string
+          listing_description: string | null
+          listing_title: string
+          org_id: string
+          status: Database["public"]["Enums"]["listing_status"]
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          available_from?: string | null
+          created_at?: string
+          display_rent?: number | null
+          highlights?: string[] | null
+          id?: string
+          listing_description?: string | null
+          listing_title: string
+          org_id: string
+          status?: Database["public"]["Enums"]["listing_status"]
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          available_from?: string | null
+          created_at?: string
+          display_rent?: number | null
+          highlights?: string[] | null
+          id?: string
+          listing_description?: string | null
+          listing_title?: string
+          org_id?: string
+          status?: Database["public"]["Enums"]["listing_status"]
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: true
             referencedRelation: "units"
             referencedColumns: ["id"]
           },
@@ -389,6 +506,9 @@ export type Database = {
       user_role: { Args: never; Returns: string }
     }
     Enums: {
+      inquiry_status: "new" | "contacted" | "closed"
+      inquiry_type: "inquiry" | "application"
+      listing_status: "draft" | "published" | "unlisted"
       property_type_enum:
         | "house"
         | "duplex"
@@ -524,6 +644,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      inquiry_status: ["new", "contacted", "closed"],
+      inquiry_type: ["inquiry", "application"],
+      listing_status: ["draft", "published", "unlisted"],
       property_type_enum: [
         "house",
         "duplex",
