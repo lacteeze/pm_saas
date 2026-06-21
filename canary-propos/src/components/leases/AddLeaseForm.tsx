@@ -135,7 +135,7 @@ export function AddLeaseForm({ tenants, properties, buttonLabel = 'Add Lease' }:
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={<span />} onClick={() => setOpen(true)}>
         <Button>{buttonLabel}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

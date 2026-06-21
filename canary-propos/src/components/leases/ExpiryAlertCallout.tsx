@@ -49,7 +49,7 @@ const BUCKETS: Record<string, BucketConfig> = {
   },
 }
 
-export function ExpiryAlertCallout({ leases }: ExpiryAlertCalloutProps) {
+export function ExpiryAlertCallout({ leases = [] }: ExpiryAlertCalloutProps) {
   const urgent = leases.filter((l) => l.daysUntilExpiry <= 30)
   const warning = leases.filter((l) => l.daysUntilExpiry > 30 && l.daysUntilExpiry <= 60)
   const notice = leases.filter((l) => l.daysUntilExpiry > 60 && l.daysUntilExpiry <= 90)

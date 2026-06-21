@@ -94,7 +94,7 @@ export default async function LeasesPage() {
       const daysUntilExpiry = Math.ceil(
         (new Date(l.end_date).getTime() - new Date().getTime()) / 86400000
       )
-      return { id: l.id, tenantName, unitDisplay, endDate: l.end_date, daysUntilExpiry }
+      return { id: l.id, tenantName, propertyUnit: unitDisplay, endDate: l.end_date, daysUntilExpiry }
     })
 
   return (
@@ -116,7 +116,7 @@ export default async function LeasesPage() {
       </div>
 
       {/* Expiry alert callout */}
-      <ExpiryAlertCallout expiringLeases={expiringLeases} />
+      <ExpiryAlertCallout leases={expiringLeases} />
 
       {/* Lease list */}
       {(!leases || leases.length === 0) ? (
