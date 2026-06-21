@@ -29,7 +29,8 @@ function isProtectedPath(pathname: string): boolean {
     pathname.startsWith('/admin') ||
     pathname.startsWith('/onboarding') ||  // CR-04: protect onboarding from unauthed access
     pathname.startsWith('/people') ||
-    pathname.startsWith('/settings')
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/inquiries')
   )
 }
 

@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { SetupBanner } from '@/components/onboarding/SetupBanner'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ExpiryAlertCallout } from '@/components/leases/ExpiryAlertCallout'
+import { MessageSquare } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -40,6 +42,7 @@ export default async function DashboardPage() {
     { count: occupiedUnits },
     { count: vacantUnits },
     { count: activeLeases },
+    { count: newInquiryCount },
   ] = await Promise.all([
     supabase.from('units').select('*', { count: 'exact', head: true }).eq('org_id', orgId ?? ''),
     supabase
@@ -57,6 +60,11 @@ export default async function DashboardPage() {
       .select('*', { count: 'exact', head: true })
       .eq('org_id', orgId ?? '')
       .eq('status', 'active'),
+    supabase
+      .from('inquiries')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', orgId ?? '')
+      .eq('status', 'new'),
   ])
 
   // Expiring leases within 90 days (LEASE-03, T-02-18)
@@ -126,6 +134,28 @@ export default async function DashboardPage() {
           vacantUnits={vacantUnits ?? 0}
           activeLeases={activeLeases ?? 0}
         />
+
+        {/* New inquiries callout card (D-12, LIST-07) */}
+        <Link
+          href="/inquiries"
+          className={`flex items-center gap-4 rounded-xl border p-4 transition-colors ${
+            (newInquiryCount ?? 0) > 0
+              ? 'border-amber-200 bg-amber-50 hover:bg-amber-100'
+              : 'border-stone-200 bg-white hover:bg-stone-50'
+          }`}
+        >
+          <MessageSquare
+            className={`h-6 w-6 shrink-0 ${(newInquiryCount ?? 0) > 0 ? 'text-amber-600' : 'text-stone-400'}`}
+          />
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-semibold ${(newInquiryCount ?? 0) > 0 ? 'text-amber-900' : 'text-stone-700'}`}>
+              {(newInquiryCount ?? 0) > 0
+                ? `${newInquiryCount} new ${newInquiryCount === 1 ? 'inquiry' : 'inquiries'} awaiting review`
+                : 'No new inquiries'}
+            </p>
+            <p className="text-xs text-stone-500">View all inquiries and applications →</p>
+          </div>
+        </Link>
 
         {/* Lease expiry alerts (LEASE-03) — only renders if leases expiring within 90 days */}
         {expiringLeases.length > 0 && (

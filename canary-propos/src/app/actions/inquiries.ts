@@ -5,11 +5,13 @@
 // for manager email lookup (service role — server-only, T-03-15).
 
 import { z } from 'zod'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createClientJs } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { sendEmail } from '@/lib/email/send'
 import { InquiryNotificationEmail } from '@/lib/email/templates/InquiryNotificationEmail'
 import React from 'react'
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 // --- Action result type ---
 export type InquiryActionResult =
@@ -18,7 +20,7 @@ export type InquiryActionResult =
 
 // --- Anon client for public INSERTs ---
 function createAnonClient() {
-  return createClient<Database>(
+  return createClientJs<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
@@ -30,7 +32,7 @@ function createAdminClientInternal() {
   if (!serviceKey) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
   }
-  return createClient<Database>(
+  return createClientJs<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     serviceKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
@@ -171,6 +173,57 @@ const applicationSchema = z.object({
   listing_id: z.string().uuid('Invalid listing'),
   org_id: z.string().uuid('Invalid org'),
 })
+
+// --- updateInquiryStatus (authenticated — manager only, T-03-17) ---
+
+const updateStatusSchema = z.object({
+  id: z.string().uuid('Invalid inquiry ID'),
+  status: z.enum(['new', 'contacted', 'closed']),
+})
+
+export async function updateInquiryStatus(
+  id: string,
+  status: 'new' | 'contacted' | 'closed'
+): Promise<{ error?: string }> {
+  const parsed = updateStatusSchema.safeParse({ id, status })
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0]?.message ?? 'Invalid input' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Resolve caller's org_id (T-03-17 — cross-org update prevention)
+  const { data: person } = await supabase
+    .from('people')
+    .select('org_id, role')
+    .eq('user_id', user.id)
+    .eq('active', true)
+    .single()
+
+  if (!person?.org_id) return { error: 'Not authorized' }
+  if (!person.role?.includes('manager') && !person.role?.includes('admin')) {
+    return { error: 'Not authorized' }
+  }
+
+  const { error: updateError } = await supabase
+    .from('inquiries')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.id)
+    .eq('org_id', person.org_id) // T-03-17: guard by org_id
+
+  if (updateError) {
+    console.error('[updateInquiryStatus] update error:', updateError)
+    return { error: 'Failed to update status. Please try again.' }
+  }
+
+  revalidatePath('/inquiries')
+  revalidatePath('/dashboard')
+  return {}
+}
 
 // --- submitInquiry ---
 export async function submitInquiry(formData: FormData): Promise<InquiryActionResult> {
