@@ -4,6 +4,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Public listing routes — unauthenticated visitors, no session required (D-06)
+function isPublicPath(pathname: string): boolean {
+  return pathname.startsWith('/listings')
+}
+
 function isProtectedPath(pathname: string): boolean {
   return (
     pathname.startsWith('/dashboard') ||
@@ -48,6 +53,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   const role = user?.app_metadata?.role as string | undefined
+
+  // Public listing routes — skip all auth checks
+  if (isPublicPath(pathname)) {
+    return supabaseResponse
+  }
 
   // Unauthenticated user accessing a protected path → redirect to /login
   if (!user && isProtectedPath(pathname)) {
