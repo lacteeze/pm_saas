@@ -2,70 +2,73 @@
 phase: 02-core-data-model
 plan: "06"
 subsystem: tenant-portal
-tags: [tenant, lease, pdf-download, rls, server-actions]
+tags: [tenant, lease, pdf-download, signed-url, rls]
 dependency_graph:
-  requires: ["02-04"]
-  provides: ["LEASE-06"]
-  affects: []
+  requires: ["02-01", "02-04"]
+  provides: [tenant-lease-view, lease-pdf-download]
+  affects: [tenant-portal]
 tech_stack:
   added: []
-  patterns:
-    - RSC lease card with maybeSingle RLS-scoped query
-    - Client component (LeaseDownloadButton) calling server action via startTransition
-    - 60-second signed URL via Supabase Storage createSignedUrl
+  patterns: [RSC-data-fetch, server-action-signed-url, client-component-download]
 key_files:
   created:
     - canary-propos/src/app/(tenant)/my-home/LeaseDownloadButton.tsx
+    - canary-propos/src/app/actions/leases.ts
   modified:
     - canary-propos/src/app/(tenant)/my-home/page.tsx
-    - canary-propos/src/app/actions/leases.ts
 decisions:
-  - Signed URL expiry set to 60 seconds — enough for tab open, not persistent link
-  - Download button disabled (not hidden) when no document_path, with tooltip
-  - generateLeaseDownloadUrl added to existing leases.ts server actions file
+  - "LeaseDownloadButton extracted as a co-located client component (same route folder) instead of src/components/leases/ since Plan 02-04 was not yet executed"
+  - "generateLeaseDownloadUrl server action created here (normally Plan 02-04's artifact) — auto-deviation Rule 3 (blocking dependency missing)"
 metrics:
-  duration: "~2 hours"
+  duration: "~10 minutes"
   completed: "2026-06-21"
   tasks_completed: 1
-  tasks_total: 1
+  tasks_total: 2
   files_changed: 3
 ---
 
-# Phase 2 Plan 06: Tenant /my-home Lease Card Summary
+# Phase 2 Plan 06: Tenant /my-home Lease Card + PDF Download Summary
 
-Replaced the /my-home placeholder with a tenant-facing lease view. Tenant sees their active lease details (property address, unit, term, rent) and can download their lease PDF via a 60-second signed URL generated server-side.
+Tenant-facing lease view at /my-home showing the active lease card (property address, unit, term, rent) with a 60-second signed URL PDF download via server action.
 
 ## What Was Built
 
-- **`/my-home` RSC page** — queries `leases` joined to `units` and `properties` via `maybeSingle()` scoped to `tenant_id`. Renders a lease card with property address, unit number, lease term dates, and monthly rent.
-- **`LeaseDownloadButton` client component** — calls `generateLeaseDownloadUrl` server action via `startTransition`, then opens the signed URL in a new tab. Disabled with tooltip when no `document_path` on the lease.
-- **`generateLeaseDownloadUrl` server action** — added to `canary-propos/src/app/actions/leases.ts`. Uses Supabase Storage `createSignedUrl` with 60-second expiry. RLS on the `leases` table ensures tenants can only reach their own lease record.
-- **Empty state** — shown when no active lease found, with contact message.
+### Task 1: Tenant /my-home lease card (COMPLETED)
+- **`src/app/(tenant)/my-home/page.tsx`** — RSC page: auth guard → person row → active lease query (maybeSingle) → lease card with property/unit/term/rent rows → empty state when no lease
+- **`src/app/(tenant)/my-home/LeaseDownloadButton.tsx`** — 'use client' component; calls `generateLeaseDownloadUrl` server action in `startTransition`, opens signed URL in new tab. Disabled with tooltip when `hasDocument=false`. Error message on failed URL generation.
+- **`src/app/actions/leases.ts`** — `generateLeaseDownloadUrl(leaseId)` server action; fetches `document_path` via RLS-scoped query (only tenant's own lease returned), calls `storage.createSignedUrl` with 60s TTL.
 
-## Verification Results
-
-All 6 human verification checks approved:
-1. Tenant sees lease card with property address, unit, term dates, and rent
-2. Download PDF button present when document exists
-3. Clicking Download opens signed URL in new tab
-4. Download button disabled with tooltip when no document uploaded
-5. Empty state shown when no active lease found
-6. Tenant cannot access another tenant's lease (RLS enforced)
+### Task 2: Human verification checkpoint (PENDING)
+Requires end-to-end tenant sign-in and PDF download verification.
 
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 3 - Blocking] generateLeaseDownloadUrl server action created in this plan**
+- **Found during:** Task 1 setup
+- **Issue:** Plan 02-04 (leases list/detail pages) was not executed in this worktree; `src/app/actions/leases.ts` did not exist.
+- **Fix:** Created `src/app/actions/leases.ts` with `generateLeaseDownloadUrl` as specified by the 02-04 plan interface. Identical signature and behavior.
+- **Files modified:** `canary-propos/src/app/actions/leases.ts`
+- **Commit:** 50c4f98
+
+**2. [Rule 3 - Blocking] LeaseDownloadButton co-located in route folder**
+- **Found during:** Task 1
+- **Issue:** `src/components/leases/LeaseDownloadButton.tsx` referenced in plan doesn't exist (Plan 02-04 not executed). Rather than create it in the components folder (Plan 02-04's responsibility), co-located as a route-adjacent client component.
+- **Fix:** Created `src/app/(tenant)/my-home/LeaseDownloadButton.tsx` — functionally equivalent.
+- **Commit:** 50c4f98
 
 ## Known Stubs
 
-None — lease data is live from the database via RLS-scoped query.
+None — lease data is fetched live from the database.
 
-## Threat Surface Scan
+## Threat Flags
 
-No new network endpoints or auth paths introduced. `generateLeaseDownloadUrl` is a server action gated by Supabase Auth session and `leases_select_tenant` RLS policy — tenant can only generate a signed URL for their own lease document.
+None — no new trust boundaries introduced beyond those documented in the plan's threat model (T-02-19, T-02-20, T-02-21).
 
 ## Self-Check: PASSED
 
-- `canary-propos/src/app/(tenant)/my-home/LeaseDownloadButton.tsx` — created in commit 50c4f98
-- `canary-propos/src/app/(tenant)/my-home/page.tsx` — modified in commit 50c4f98
-- `canary-propos/src/app/actions/leases.ts` — modified in commit 50c4f98
+- `canary-propos/src/app/(tenant)/my-home/page.tsx` — exists, verified
+- `canary-propos/src/app/(tenant)/my-home/LeaseDownloadButton.tsx` — exists, verified
+- `canary-propos/src/app/actions/leases.ts` — exists, verified
+- Commit 50c4f98 — confirmed via git log
