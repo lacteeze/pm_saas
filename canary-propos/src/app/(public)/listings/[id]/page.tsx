@@ -1,297 +1,265 @@
 // src/app/(public)/listings/[id]/page.tsx
-// Public listing detail page — no auth required.
-// Shows full listing info: photos, unit details, highlights, amenities,
-// Google Maps embed, and CTA anchors for inquiry/apply forms (added in plan 03-05).
-import { headers } from 'next/headers'
+// Public listing detail page — shows full listing info with inquiry and application forms.
+// Unauthenticated access. Org resolved from ?org=<slug> query param (D-05).
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getOrgBySlug } from '@/lib/orgs'
-import { createPublicClient } from '@/lib/supabase/public'
+import { InquiryForm } from '@/components/listings/InquiryForm'
+import { ApplicationForm } from '@/components/listings/ApplicationForm'
 
-interface Props {
+function createAnonClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+
+interface PageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ org?: string }>
 }
 
-function formatCAD(amount: number): string {
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-    maximumFractionDigits: 0,
-  }).format(amount)
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-CA', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-export default async function ListingDetailPage({ params }: Props) {
+export default async function ListingDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  const headersList = await headers()
-  const slug = headersList.get('x-org-slug') ?? ''
+  const { org: orgSlug } = await searchParams
 
-  const org = await getOrgBySlug(slug)
+  const supabase = createAnonClient()
 
-  if (!org) {
-    return (
-      <div className="py-16 text-center">
-        <h1 className="text-2xl font-semibold text-stone-800 mb-2">Listing not found</h1>
-        <p className="text-stone-500">This listing is no longer available.</p>
-      </div>
-    )
-  }
-
-  const supabase = createPublicClient()
+  // Fetch listing with unit + property data
   const { data: listing } = await supabase
     .from('listings')
-    .select(
-      `id, listing_title, listing_description, highlights, display_rent,
-       available_from, status,
-       units!unit_id(id, bedrooms, bathrooms, sq_footage, asking_rent, amenities,
-         properties!property_id(id, street_address, city, province, photo_paths))`
-    )
+    .select(`
+      id,
+      org_id,
+      listing_title,
+      listing_description,
+      highlights,
+      display_rent,
+      available_from,
+      status,
+      units (
+        bedrooms,
+        bathrooms,
+        sq_footage,
+        amenities,
+        asking_rent,
+        properties (
+          street_address,
+          city,
+          province,
+          photo_paths
+        )
+      )
+    `)
     .eq('id', id)
     .eq('status', 'published')
-    .eq('org_id', org.id)
     .single()
 
-  if (!listing) {
-    return (
-      <div className="py-16 text-center">
-        <h1 className="text-2xl font-semibold text-stone-800 mb-2">Listing not found</h1>
-        <p className="text-stone-500">
-          This listing is no longer available or has been removed.
-        </p>
-        <Link
-          href={`/listings${slug ? `?org=${slug}` : ''}`}
-          className="mt-4 inline-block text-sm text-stone-600 hover:underline"
-        >
-          ← Back to all listings
-        </Link>
-      </div>
-    )
-  }
+  if (!listing) notFound()
 
-  // Type the joined result
-  const unit = listing.units as {
-    id: string
-    bedrooms: number
-    bathrooms: number
-    sq_footage: number | null
-    asking_rent: number | null
-    amenities: string[] | null
-    properties: {
-      id: string
-      street_address: string
-      city: string
-      province: string
-      photo_paths: string[] | null
-    } | null
-  } | null
-
-  const property = unit?.properties ?? null
-  const rent = listing.display_rent ?? unit?.asking_rent ?? null
-
-  const storageBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/org-assets`
-  const photoUrls: string[] =
-    property?.photo_paths?.map((p) => `${storageBase}/${p}`) ?? []
-
-  const address = property
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const unit = listing.units as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const property = unit?.properties as any
+  const rent = listing.display_rent ?? unit?.asking_rent
+  const fullAddress = property
     ? `${property.street_address}, ${property.city}, ${property.province}`
-    : null
+    : ''
 
-  const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
-  const showMap = !!(address && mapsKey)
+  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
+  const mapsQuery = encodeURIComponent(fullAddress)
 
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-4 py-8">
       {/* Back link */}
       <Link
-        href={`/listings${slug ? `?org=${slug}` : ''}`}
-        className="text-sm text-stone-500 hover:text-stone-800 transition-colors mb-6 inline-block"
+        href={`/listings${orgSlug ? `?org=${orgSlug}` : ''}`}
+        className="mb-6 inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-900"
       >
-        ← All listings
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        All listings
       </Link>
 
-      {/* Main layout: two-column on desktop, stacked on mobile */}
-      <div className="lg:grid lg:grid-cols-2 lg:gap-10">
-
-        {/* Left: Photo gallery */}
-        <div className="mb-8 lg:mb-0">
-          {photoUrls.length > 0 ? (
-            <div>
-              {/* Main photo */}
-              <div className="rounded-xl overflow-hidden h-72 sm:h-96 bg-stone-100 mb-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photoUrls[0]}
-                  alt={listing.listing_title}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              {/* Thumbnails */}
-              {photoUrls.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {photoUrls.slice(1).map((url, i) => (
-                    <div
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Main column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Photos */}
+          {property?.photo_paths?.length > 0 ? (
+            <div className="overflow-hidden rounded-xl bg-stone-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={property.photo_paths[0]}
+                alt={listing.listing_title}
+                className="h-72 w-full object-cover sm:h-96"
+              />
+              {property.photo_paths.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto p-2">
+                  {property.photo_paths.slice(1, 5).map((src: string, i: number) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       key={i}
-                      className="flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone-100"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Photo ${i + 2}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
+                      src={src}
+                      alt={`Photo ${i + 2}`}
+                      className="h-20 w-28 flex-shrink-0 rounded-md object-cover"
+                    />
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-xl h-72 sm:h-96 bg-stone-100 flex items-center justify-center text-stone-300 text-6xl">
-              🏠
+            <div className="flex h-72 items-center justify-center rounded-xl bg-stone-100">
+              <svg className="h-14 w-14 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
+              </svg>
             </div>
           )}
-        </div>
 
-        {/* Right: Listing details */}
-        <div>
-          {/* Title + price */}
-          <h1 className="text-2xl font-bold text-stone-900 mb-1 leading-tight">
-            {listing.listing_title}
-          </h1>
+          {/* Title + address */}
+          <div>
+            <h1 className="text-2xl font-bold text-stone-900">{listing.listing_title}</h1>
+            {fullAddress && (
+              <p className="mt-1 text-stone-500">{fullAddress}</p>
+            )}
+          </div>
 
-          <p className="text-2xl font-semibold text-stone-700 mb-4">
-            {rent ? `${formatCAD(rent)}/mo` : 'Price on request'}
-          </p>
-
-          {/* Available from */}
-          {listing.available_from && (
-            <p className="text-sm text-stone-500 mb-4">
-              Available from{' '}
-              <span className="font-medium text-stone-700">
-                {formatDate(listing.available_from)}
-              </span>
-            </p>
-          )}
-
-          {/* Unit stats */}
-          {unit && (
-            <div className="flex gap-6 mb-5 text-stone-700">
+          {/* Unit details */}
+          <div className="flex flex-wrap gap-4 rounded-xl border border-stone-200 bg-white p-4">
+            {unit?.bedrooms != null && (
               <div className="text-center">
-                <p className="text-xl font-semibold">{unit.bedrooms}</p>
-                <p className="text-xs text-stone-500 uppercase tracking-wide">
-                  Bed{unit.bedrooms !== 1 ? 's' : ''}
-                </p>
+                <p className="text-xl font-bold text-stone-900">{unit.bedrooms}</p>
+                <p className="text-xs text-stone-500">Bedrooms</p>
               </div>
+            )}
+            {unit?.bathrooms != null && (
               <div className="text-center">
-                <p className="text-xl font-semibold">{unit.bathrooms}</p>
-                <p className="text-xs text-stone-500 uppercase tracking-wide">
-                  Bath{unit.bathrooms !== 1 ? 's' : ''}
-                </p>
+                <p className="text-xl font-bold text-stone-900">{unit.bathrooms}</p>
+                <p className="text-xs text-stone-500">Bathrooms</p>
               </div>
-              {unit.sq_footage && (
-                <div className="text-center">
-                  <p className="text-xl font-semibold">{unit.sq_footage}</p>
-                  <p className="text-xs text-stone-500 uppercase tracking-wide">Sq ft</p>
-                </div>
-              )}
+            )}
+            {unit?.sq_footage && (
+              <div className="text-center">
+                <p className="text-xl font-bold text-stone-900">{unit.sq_footage}</p>
+                <p className="text-xs text-stone-500">Sq ft</p>
+              </div>
+            )}
+            {listing.available_from && (
+              <div className="text-center">
+                <p className="text-xl font-bold text-stone-900">
+                  {new Date(listing.available_from).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
+                </p>
+                <p className="text-xs text-stone-500">Available</p>
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {listing.listing_description && (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-stone-900">About this unit</h2>
+              <p className="whitespace-pre-wrap text-stone-600 leading-relaxed">
+                {listing.listing_description}
+              </p>
             </div>
           )}
 
           {/* Highlights */}
           {listing.highlights && listing.highlights.length > 0 && (
-            <div className="mb-5">
-              <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
-                Highlights
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {listing.highlights.map((h, i) => (
-                  <span
-                    key={i}
-                    className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium px-3 py-1 rounded-full"
-                  >
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-stone-900">Highlights</h2>
+              <ul className="space-y-1">
+                {listing.highlights.map((h: string, i: number) => (
+                  <li key={i} className="flex items-center gap-2 text-stone-600">
+                    <svg className="h-4 w-4 flex-shrink-0 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 111.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                     {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Amenities */}
+          {unit?.amenities && unit.amenities.length > 0 && (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-stone-900">Amenities</h2>
+              <div className="flex flex-wrap gap-2">
+                {unit.amenities.map((a: string, i: number) => (
+                  <span key={i} className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-sm text-stone-700">
+                    {a}
                   </span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Amenities */}
-          {unit?.amenities && unit.amenities.length > 0 && (
-            <div className="mb-5">
-              <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
-                Amenities
-              </h2>
-              <p className="text-sm text-stone-600">{unit.amenities.join(', ')}</p>
+          {/* Map */}
+          {fullAddress && mapsApiKey && (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-stone-900">Location</h2>
+              <div className="overflow-hidden rounded-xl">
+                <iframe
+                  title="Property location"
+                  width="100%"
+                  height="300"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${mapsQuery}`}
+                />
+              </div>
             </div>
           )}
+        </div>
 
-          {/* Description */}
-          {listing.listing_description && (
-            <div className="mb-6">
-              <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
-                About this unit
-              </h2>
-              <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line">
-                {listing.listing_description}
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {/* Rent card */}
+          <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+            {rent ? (
+              <p className="text-3xl font-bold text-stone-900">
+                ${Number(rent).toLocaleString()}
+                <span className="text-base font-normal text-stone-500">/mo</span>
               </p>
-            </div>
-          )}
+            ) : (
+              <p className="text-stone-500">Contact for pricing</p>
+            )}
+            {listing.available_from && (
+              <p className="mt-1 text-sm text-stone-500">
+                Available {new Date(listing.available_from).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            )}
 
-          {/* CTA buttons */}
-          <div className="flex gap-3 flex-wrap">
-            <a
-              href="#inquiry-form"
-              className="px-5 py-2.5 rounded-lg bg-stone-800 text-white text-sm font-medium hover:bg-stone-700 transition-colors"
-            >
-              Request a showing
-            </a>
-            <a
-              href="#apply-form"
-              className="px-5 py-2.5 rounded-lg border border-stone-300 text-stone-700 text-sm font-medium hover:bg-stone-50 transition-colors"
-            >
-              Apply now
-            </a>
+            {/* CTA buttons */}
+            <div className="mt-4 flex flex-col gap-2">
+              <a
+                href="#inquiry-form"
+                className="flex min-h-11 items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+              >
+                Request a showing
+              </a>
+              <a
+                href="#apply-form"
+                className="flex min-h-11 items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
+              >
+                Apply for this unit
+              </a>
+            </div>
           </div>
+
+          {/* Sticky forms on mobile scroll to them */}
         </div>
       </div>
 
-      {/* Section 3: Map */}
-      {address && (
-        <div className="mt-10">
-          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">
-            Location
-          </h2>
-          <p className="text-sm text-stone-600 mb-3">{address}</p>
-          {showMap ? (
-            <div className="rounded-xl overflow-hidden border border-stone-200">
-              <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${encodeURIComponent(address)}`}
-                width="100%"
-                height="300"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Property location"
-              />
-            </div>
-          ) : (
-            <div className="rounded-xl border border-stone-200 h-40 bg-stone-50 flex items-center justify-center text-sm text-stone-400">
-              Map not available in development (set NEXT_PUBLIC_GOOGLE_MAPS_KEY to enable)
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Anchor targets for inquiry/apply forms — populated in plan 03-05 */}
-      <div id="inquiry-form" className="mt-16" />
-      <div id="apply-form" className="mt-4" />
+      {/* Forms section — full width below the grid, anchored */}
+      <div className="mt-10 grid gap-6 sm:grid-cols-2">
+        <InquiryForm listingId={listing.id} orgId={listing.org_id} />
+        <ApplicationForm listingId={listing.id} orgId={listing.org_id} />
+      </div>
     </div>
   )
 }
