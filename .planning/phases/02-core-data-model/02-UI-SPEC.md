@@ -49,12 +49,11 @@ Exceptions: Touch targets minimum 44px height (nav items use `min-h-11` = 44px; 
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
-| Body | 14px (text-sm) | 400 (regular) | 1.5 |
-| Label / meta | 12px (text-xs) | 400 (regular) | 1.4 |
-| Heading / section title | 16px (text-base) or 20px (text-xl) | 600 (semibold) | 1.2 |
-| Page title | 20px (text-xl) | 600 (semibold) | 1.2 |
+| Body | 14px (text-sm) | 400 (font-normal) | 1.5 |
+| Label / meta | 12px (text-xs) | 400 (font-normal) | 1.4 |
+| Heading / section title / page title / metric value | 20px (text-xl) | 600 (font-semibold) | 1.2 |
 
-Source: Established in people/page.tsx — `text-xl font-semibold` for page title, `text-sm` for body, `text-xs` for table headers.
+Source: Established in people/page.tsx — `text-xl font-semibold` for page title, `text-sm` for body, `text-xs` for table headers. Maximum 4 declared sizes; this phase uses 3 (12px, 14px, 20px). Maximum 2 declared weights: font-normal (400) and font-semibold (600).
 
 ---
 
@@ -113,14 +112,14 @@ Manage your team and contacts.
 **Contacts tab:** Same desktop table + mobile card pattern, different columns.
 
 Desktop table columns (Contacts):
-- Name (font-medium text-stone-900)
+- Name (font-semibold text-stone-900)
 - Email (text-stone-600)
 - Phone (text-stone-600)
 - Role(s) (comma-separated badges, e.g. "Tenant", "Owner")
 - Actions (Edit / Deactivate button)
 
 Mobile card (Contacts):
-- Name (font-medium text-stone-900) + Role badge(s) top-right
+- Name (font-semibold text-stone-900) + Role badge(s) top-right
 - Email (text-sm text-stone-500)
 - Phone (text-sm text-stone-500)
 - Edit link (text-sm text-amber-600)
@@ -163,7 +162,7 @@ Add tenants, owners, and vendors to build your contact directory.
 **Desktop (≥768px):** Table layout matching people/page.tsx pattern.
 
 Desktop table columns:
-- Address (font-medium text-stone-900, full street + city)
+- Address (font-semibold text-stone-900, full street + city)
 - Portfolio (text-stone-600, portfolio name or "—")
 - Owner (text-stone-600, owner full name or "—")
 - Units (text-stone-600, e.g. "8 units")
@@ -173,7 +172,7 @@ Desktop table columns:
 **Mobile (< 768px):** Cards.
 
 Mobile card:
-- Address (font-medium text-stone-900)
+- Address (font-semibold text-stone-900)
 - Owner name (text-sm text-stone-500) and Portfolio (text-sm text-stone-500)
 - Unit count + occupancy inline (text-xs text-stone-400)
 - "View" link (text-sm text-amber-600) — navigates to /properties/[id]
@@ -222,7 +221,7 @@ Owner: Jane Smith · Portfolio: Downtown Core · 8 units · 75% occupied
 **Units tab:** Table (desktop) + cards (mobile).
 
 Desktop units table columns:
-- Unit # (font-medium text-stone-900, e.g. "1A")
+- Unit # (font-semibold text-stone-900, e.g. "1A")
 - Bedrooms / Bathrooms (text-stone-600, e.g. "2 bd / 1.5 ba")
 - Sq Ft (text-stone-600 or "—")
 - Asking Rent (text-stone-600, "$1,400/mo" or "—")
@@ -230,7 +229,7 @@ Desktop units table columns:
 - Actions (Edit unit — opens Dialog)
 
 Mobile unit card:
-- Unit number (font-medium) + Status badge (top-right)
+- Unit number (font-semibold) + Status badge (top-right)
 - Beds/baths (text-sm text-stone-500)
 - Asking rent (text-sm text-stone-600) or "—"
 - "Edit" link (text-sm text-amber-600)
@@ -288,7 +287,7 @@ Within 90 days (stone-600 text) [N] lease(s)  — list tenant + unit + days
 Each row in the callout links to the relevant lease detail.
 
 **Desktop leases table columns:**
-- Tenant (font-medium text-stone-900, full name)
+- Tenant (font-semibold text-stone-900, full name)
 - Property + Unit (text-stone-600, "123 Main St — Unit 1A")
 - Start (text-stone-600, "Sep 1, 2024")
 - End (text-stone-600, "Aug 31, 2025")
@@ -298,7 +297,7 @@ Each row in the callout links to the relevant lease detail.
 - Actions (View)
 
 **Mobile lease card:**
-- Tenant name (font-medium) + Status badge (top-right)
+- Tenant name (font-semibold) + Status badge (top-right)
 - Property + unit (text-sm text-stone-500)
 - "Sep 1, 2024 – Aug 31, 2025" (text-xs text-stone-400)
 - "$1,400/mo" (text-sm text-stone-600)
@@ -418,7 +417,7 @@ Each summary card:
 ```
 [Card, rounded-xl, border-stone-200, bg-white, p-4]
 [icon 20px stone-400]
-[metric value — text-2xl font-semibold text-stone-900]
+[metric value — text-xl font-semibold text-stone-900]
 [label — text-xs text-stone-500 uppercase tracking-wide]
 ```
 
@@ -539,7 +538,7 @@ All create/edit forms use Dialog (shadcn). Pattern:
 - Trigger button: top-right of page header, `variant="default"` (filled, black)
 - Dialog width: `max-w-md` (single-column form), `max-w-lg` for multi-field forms (Add Property, Add Lease)
 - Form grid: single column, `space-y-4` between fields
-- Field label: `text-sm font-medium text-stone-700` (shadcn Label)
+- Field label: `text-sm font-semibold text-stone-700` (shadcn Label)
 - Input: shadcn Input, full width
 - Required fields: no asterisk; validation error shown below input in `text-xs text-red-600`
 - Footer: `flex justify-end gap-2` — [Cancel (outline)] [Submit (default)]
