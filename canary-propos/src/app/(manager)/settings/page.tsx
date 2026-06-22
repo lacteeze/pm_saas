@@ -1,8 +1,10 @@
 // src/app/(manager)/settings/page.tsx
 // Org settings: name, logo, province (UI-SPEC §5, ORGS-04)
+// Integrations: Gmail OAuth (PAY-03)
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { OrgSettingsForm } from '@/components/settings/OrgSettingsForm'
+import { GmailIntegrationSection } from '@/components/settings/GmailIntegrationSection'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -22,9 +24,10 @@ export default async function SettingsPage() {
 
   if (!person) redirect('/login')
 
-  const { data: org } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: org } = await (supabase as any)
     .from('organizations')
-    .select('id, name, province, logo_path')
+    .select('id, name, province, logo_path, gmail_connected_at')
     .eq('id', person.org_id)
     .single()
 
@@ -38,6 +41,10 @@ export default async function SettingsPage() {
         initialName={org.name}
         initialProvince={org.province}
         initialLogoPath={org.logo_path}
+      />
+      <GmailIntegrationSection
+        orgId={org.id}
+        gmailConnectedAt={org.gmail_connected_at ?? null}
       />
     </div>
   )
