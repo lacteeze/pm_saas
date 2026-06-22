@@ -2,7 +2,9 @@
 
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import { CANADIAN_PROVINCES } from '@/lib/constants/provinces'
+import { getGmailAuthUrl } from '@/lib/gmail'
 
 const provinceCodes = CANADIAN_PROVINCES.map((p) => p.value) as [string, ...string[]]
 
@@ -73,6 +75,57 @@ export async function updateOrgProfile(formData: {
     return { success: false, error: 'Failed to save changes. Please try again.' }
   }
 
+  return { success: true }
+}
+
+// --- getGmailConnectUrl: generates Google OAuth URL for Gmail connection (PAY-03) ---
+export async function getGmailConnectUrl(): Promise<UpdateOrgResult & { url?: string }> {
+  const ctx = await getCallerContext()
+  if (!ctx) {
+    return { success: false, error: 'You must be signed in.' }
+  }
+
+  if (!ctx.person.role?.includes('manager') && !ctx.person.role?.includes('admin')) {
+    return { success: false, error: 'Only managers can connect Gmail.' }
+  }
+
+  try {
+    const url = getGmailAuthUrl(ctx.person.org_id)
+    return { success: true, url }
+  } catch (err) {
+    console.error('[getGmailConnectUrl] failed:', err)
+    return { success: false, error: 'Failed to generate Gmail authorization URL.' }
+  }
+}
+
+// --- disconnectGmail: clears all gmail_* columns on the org row (PAY-03) ---
+export async function disconnectGmail(_orgId?: string): Promise<UpdateOrgResult> {
+  const ctx = await getCallerContext()
+  if (!ctx) {
+    return { success: false, error: 'You must be signed in.' }
+  }
+
+  if (!ctx.person.role?.includes('manager') && !ctx.person.role?.includes('admin')) {
+    return { success: false, error: 'Only managers can disconnect Gmail.' }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (ctx.supabase as any)
+    .from('organizations')
+    .update({
+      gmail_access_token: null,
+      gmail_refresh_token: null,
+      gmail_token_expiry: null,
+      gmail_connected_at: null,
+    })
+    .eq('id', ctx.person.org_id)
+
+  if (error) {
+    console.error('[disconnectGmail] error:', error)
+    return { success: false, error: 'Failed to disconnect Gmail.' }
+  }
+
+  revalidatePath('/settings')
   return { success: true }
 }
 
