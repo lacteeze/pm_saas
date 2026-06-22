@@ -14,6 +14,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      expenses: {
+        Row: {
+          billed_amount: number
+          created_at: string
+          created_by: string | null
+          description: string
+          expense_date: string
+          id: string
+          org_id: string
+          property_id: string
+          vendor_cost: number
+        }
+        Insert: {
+          billed_amount: number
+          created_at?: string
+          created_by?: string | null
+          description: string
+          expense_date: string
+          id?: string
+          org_id: string
+          property_id: string
+          vendor_cost: number
+        }
+        Update: {
+          billed_amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          expense_date?: string
+          id?: string
+          org_id?: string
+          property_id?: string
+          vendor_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inquiries: {
         Row: {
           budget: number | null
@@ -216,6 +274,10 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string | null
+          gmail_access_token: string | null
+          gmail_connected_at: string | null
+          gmail_refresh_token: string | null
+          gmail_token_expiry: number | null
           id: string
           logo_path: string | null
           name: string
@@ -229,6 +291,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          gmail_access_token?: string | null
+          gmail_connected_at?: string | null
+          gmail_refresh_token?: string | null
+          gmail_token_expiry?: number | null
           id?: string
           logo_path?: string | null
           name: string
@@ -242,6 +308,10 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          gmail_access_token?: string | null
+          gmail_connected_at?: string | null
+          gmail_refresh_token?: string | null
+          gmail_token_expiry?: number | null
           id?: string
           logo_path?: string | null
           name?: string
@@ -254,6 +324,140 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      owner_statements: {
+        Row: {
+          generated_at: string
+          generated_by: string | null
+          id: string
+          management_fee: number
+          net_to_owner: number
+          org_id: string
+          pdf_path: string
+          period_month: number
+          period_year: number
+          property_id: string
+          rent_collected: number
+          total_expenses: number
+        }
+        Insert: {
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          management_fee?: number
+          net_to_owner?: number
+          org_id: string
+          pdf_path: string
+          period_month: number
+          period_year: number
+          property_id: string
+          rent_collected?: number
+          total_expenses?: number
+        }
+        Update: {
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          management_fee?: number
+          net_to_owner?: number
+          org_id?: string
+          pdf_path?: string
+          period_month?: number
+          period_year?: number
+          property_id?: string
+          rent_collected?: number
+          total_expenses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_statements_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_statements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_statements_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          cleared_at: string | null
+          created_at: string
+          disbursable_after: string | null
+          id: string
+          lease_id: string
+          method: string
+          notes: string | null
+          org_id: string
+          recorded_by: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount: number
+          cleared_at?: string | null
+          created_at?: string
+          disbursable_after?: string | null
+          id?: string
+          lease_id: string
+          method: string
+          notes?: string | null
+          org_id: string
+          recorded_by?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cleared_at?: string | null
+          created_at?: string
+          disbursable_after?: string | null
+          id?: string
+          lease_id?: string
+          method?: string
+          notes?: string | null
+          org_id?: string
+          recorded_by?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       people: {
         Row: {
@@ -364,6 +568,8 @@ export type Database = {
           city: string
           created_at: string | null
           id: string
+          management_fee_type: string | null
+          management_fee_value: number | null
           org_id: string
           owner_id: string | null
           photo_paths: string[] | null
@@ -378,6 +584,8 @@ export type Database = {
           city: string
           created_at?: string | null
           id?: string
+          management_fee_type?: string | null
+          management_fee_value?: number | null
           org_id: string
           owner_id?: string | null
           photo_paths?: string[] | null
@@ -392,6 +600,8 @@ export type Database = {
           city?: string
           created_at?: string | null
           id?: string
+          management_fee_type?: string | null
+          management_fee_value?: number | null
           org_id?: string
           owner_id?: string | null
           photo_paths?: string[] | null
@@ -425,6 +635,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stripe_events: {
+        Row: {
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string
+          stripe_event_id: string
+        }
+        Insert: {
+          event_type: string
+          id?: string
+          payload?: Json
+          processed_at?: string
+          stripe_event_id: string
+        }
+        Update: {
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string
+          stripe_event_id?: string
+        }
+        Relationships: []
       }
       units: {
         Row: {
