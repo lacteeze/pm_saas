@@ -92,12 +92,12 @@
   5. A manager can publish, unpublish, or edit a listing from the manager portal and changes are reflected live on the public page
 
 **Plans**: 6 plans
-- [ ] 03-01-PLAN.md — Schema migrations (listings + inquiries tables, RLS) + DB push + type regen
-- [ ] 03-02-PLAN.md — Subdomain middleware extension + public Supabase client helper
-- [ ] 03-03-PLAN.md — Manager listing CRUD (Listings tab on /properties/[id])
-- [ ] 03-04-PLAN.md — Public listings browse page (/listings) + listing detail page (/listings/[id])
-- [ ] 03-05-PLAN.md — Inquiry + application forms + server actions + manager email notification
-- [ ] 03-06-PLAN.md — Manager dashboard inquiry count card + /inquiries list page
+- [ ] 03-01-PLAN.md ï¿½ Schema migrations (listings + inquiries tables, RLS) + DB push + type regen
+- [ ] 03-02-PLAN.md ï¿½ Subdomain middleware extension + public Supabase client helper
+- [ ] 03-03-PLAN.md ï¿½ Manager listing CRUD (Listings tab on /properties/[id])
+- [ ] 03-04-PLAN.md ï¿½ Public listings browse page (/listings) + listing detail page (/listings/[id])
+- [ ] 03-05-PLAN.md ï¿½ Inquiry + application forms + server actions + manager email notification
+- [ ] 03-06-PLAN.md ï¿½ Manager dashboard inquiry count card + /inquiries list page
 **UI hint**: yes
 
 ---
@@ -120,7 +120,13 @@
   4. Submitting the same Stripe webhook event twice creates exactly one payment record (idempotent)
   5. A manager can generate a monthly owner statement; the PDF is stored as an immutable snapshot and downloading it again after editing payment data returns the original version
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 04-01-PLAN.md -- Schema migrations (payments, expenses, stripe_events, owner_statements, alter properties + organizations) + DB push
+- [ ] 04-02-PLAN.md -- Stripe webhook (idempotency + raw body), PaymentIntent route, tenant rent payment UI
+- [ ] 04-03-PLAN.md -- Gmail OAuth connect, callback, e-transfer search endpoint, settings Integrations section
+- [ ] 04-04-PLAN.md -- Manual payment recording, expense recording forms + server actions, e-transfer confirm UI
+- [ ] 04-05-PLAN.md -- Disbursement calculation, owner statement PDF generation + immutable storage
+- [ ] 04-06-PLAN.md -- Tenant payment history, receipt page, manager CSV export
 **UI hint**: yes
 
 ---
@@ -261,7 +267,7 @@
 | 1. Foundation | 5/6 | In Progress|  |
 | 2. Core Data Model | 1/6 | In Progress|  |
 | 3. Public Listings | 0/6 | Not started | - |
-| 4. Payments | 0/? | Not started | - |
+| 4. Payments | 0/6 | Not started | - |
 | 5. Maintenance | 0/? | Not started | - |
 | 6. Tenant Portal | 0/? | Not started | - |
 | 7. Owner Portal | 0/? | Not started | - |
