@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import LeaseDownloadButton from './LeaseDownloadButton'
@@ -106,11 +107,17 @@ export default async function MyHomePage() {
             </div>
           </dl>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <LeaseDownloadButton
               leaseId={lease.id}
               hasDocument={!!lease.document_path}
             />
+            <Link
+              href="/my-home/pay"
+              className="inline-flex items-center justify-center rounded-lg bg-stone-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            >
+              Pay Rent
+            </Link>
           </div>
         </div>
       )}
