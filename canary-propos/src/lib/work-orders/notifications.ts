@@ -1,10 +1,12 @@
 // src/lib/work-orders/notifications.ts
 // SERVER ONLY — never import in 'use client' files.
 // Owner notification helpers for work order pending approval state.
+// Also: vendor assignment notifications (SMS + email) — Plan 05-04.
 
 import { createElement } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/send'
+import { sendVendorJobSMS } from '@/lib/work-orders/sms'
 
 // --- Email template (inline — no JSX needed for simple HTML) ---
 function renderPendingApprovalEmail(opts: {
@@ -142,7 +144,7 @@ export async function notifyOwnerPendingApproval(
   // properties → property_owners → people (owner)
   const { data: property } = await adminSupabase
     .from('properties')
-    .select('address, city, province')
+    .select('street_address, city, province')
     .eq('id', propertyId)
     .eq('org_id', orgId)
     .single()
@@ -165,7 +167,7 @@ export async function notifyOwnerPendingApproval(
   }
 
   const propertyAddress = property
-    ? `${property.address}, ${property.city}, ${property.province}`
+    ? `${property.street_address}, ${property.city}, ${property.province}`
     : `Property ${propertyId}`
 
   const workOrderTitle = wo?.title ?? 'Maintenance Work Order'
@@ -199,4 +201,178 @@ export async function notifyOwnerPendingApproval(
   // In-app notification record: deferred to Phase 5 v2 (notifications table not yet created)
   // When implemented, insert into notifications table with type='work_order_pending_approval',
   // target_user_id = owner's user_id, and a link back to /owner/approve/[token]
+}
+
+// ---------------------------------------------------------------------------
+// Vendor assignment notifications (Plan 05-04)
+// ---------------------------------------------------------------------------
+
+function renderVendorAssignmentEmail(opts: {
+  propertyAddress: string
+  workOrderTitle: string
+  workOrderDescription: string
+  noLoginLink: string
+}): React.ReactElement {
+  const { propertyAddress, workOrderTitle, workOrderDescription, noLoginLink } = opts
+
+  return createElement(
+    'html',
+    null,
+    createElement(
+      'body',
+      { style: { fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+      createElement('h2', { style: { color: '#1a1a1a' } }, 'New Work Order — Canary Property Management'),
+      createElement(
+        'p',
+        null,
+        'You have been assigned a new maintenance work order. Please review the details below and update the status when work begins and when completed.'
+      ),
+      createElement(
+        'table',
+        { style: { borderCollapse: 'collapse', width: '100%', marginBottom: '24px' } },
+        createElement(
+          'tbody',
+          null,
+          createElement(
+            'tr',
+            null,
+            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold', width: '140px' } }, 'Property:'),
+            createElement('td', { style: { padding: '8px 0' } }, propertyAddress)
+          ),
+          createElement(
+            'tr',
+            null,
+            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold' } }, 'Job Title:'),
+            createElement('td', { style: { padding: '8px 0' } }, workOrderTitle)
+          ),
+          createElement(
+            'tr',
+            null,
+            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold', verticalAlign: 'top' } }, 'Description:'),
+            createElement('td', { style: { padding: '8px 0', whiteSpace: 'pre-wrap' } }, workOrderDescription)
+          )
+        )
+      ),
+      createElement(
+        'p',
+        { style: { marginBottom: '16px' } },
+        'Use the link below to view full job details and update your status:'
+      ),
+      createElement(
+        'a',
+        {
+          href: noLoginLink,
+          style: {
+            display: 'inline-block',
+            padding: '12px 24px',
+            backgroundColor: '#1d4ed8',
+            color: '#ffffff',
+            textDecoration: 'none',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+          },
+        },
+        'View Job Details'
+      ),
+      createElement(
+        'p',
+        { style: { marginTop: '32px', fontSize: '12px', color: '#6b7280' } },
+        'This notification was sent by Canary PropOS. If you have questions, contact Canary Property Management.'
+      )
+    )
+  ) as React.ReactElement
+}
+
+/**
+ * sendVendorAssignmentNotifications — fires SMS (if phone exists) + Resend email to vendor
+ * when a work order is assigned (status → 'assigned').
+ *
+ * Both notifications are fire-and-forget: failures are logged but never thrown.
+ * T-05-12, T-05-15: admin client used only for lookup; PINGRAM_API_KEY server-only.
+ *
+ * @param workOrderId - UUID of the work order
+ * @param orgId - organization ID (for scoping)
+ * @param vendorId - UUID of the assigned vendor (people.id)
+ * @param propertyId - UUID of the property
+ * @param workOrderTitle - title of the work order
+ * @param workOrderDescription - description of the work order
+ * @param vendorToken - vendor_token UUID (the no-login link credential)
+ */
+export async function sendVendorAssignmentNotifications(
+  workOrderId: string,
+  orgId: string,
+  vendorId: string,
+  propertyId: string,
+  workOrderTitle: string,
+  workOrderDescription: string,
+  vendorToken: string
+): Promise<void> {
+  const adminSupabase = createAdminClient()
+
+  // Look up vendor contact info
+  const { data: vendor } = await adminSupabase
+    .from('people')
+    .select('first_name, last_name, email, phone')
+    .eq('id', vendorId)
+    .single()
+
+  if (!vendor) {
+    console.warn(`[sendVendorAssignmentNotifications] Vendor ${vendorId} not found — skipping notifications`)
+    return
+  }
+
+  // Look up property address
+  const { data: property } = await adminSupabase
+    .from('properties')
+    .select('street_address, city, province')
+    .eq('id', propertyId)
+    .eq('org_id', orgId)
+    .single()
+
+  const propertyAddress = property
+    ? `${property.street_address}, ${property.city}, ${property.province}`
+    : `Property ${propertyId}`
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.canarypm.ca'
+  const noLoginLink = `${baseUrl}/vendor/jobs/${vendorToken}`
+
+  // 1. SMS — non-blocking fire-and-forget (vendor may not have a phone number)
+  if (vendor.phone) {
+    sendVendorJobSMS({
+      vendorPhone: vendor.phone,
+      propertyAddress,
+      jobDescription: workOrderTitle,
+      noLoginLink,
+    }).catch((err) => {
+      console.error(`[sendVendorAssignmentNotifications] SMS fire-and-forget error:`, err)
+    })
+  }
+
+  // 2. Email — always attempt; non-blocking
+  if (!vendor.email) {
+    console.warn(
+      `[sendVendorAssignmentNotifications] No email for vendor ${vendorId} (${vendor.first_name} ${vendor.last_name}) — skipping email`
+    )
+    return
+  }
+
+  const template = renderVendorAssignmentEmail({
+    propertyAddress,
+    workOrderTitle,
+    workOrderDescription,
+    noLoginLink,
+  })
+
+  const result = await sendEmail({
+    to: vendor.email,
+    subject: `New Work Order: ${workOrderTitle} — ${propertyAddress}`,
+    template,
+  })
+
+  if (!result.success) {
+    console.error(
+      `[sendVendorAssignmentNotifications] Failed to send email to vendor ${vendor.email}:`,
+      result.error
+    )
+  }
 }
