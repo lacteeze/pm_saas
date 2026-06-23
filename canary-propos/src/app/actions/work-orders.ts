@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TRANSITIONS, validateTransition } from '@/lib/work-orders/transitions'
-import { notifyOwnerPendingApproval } from '@/lib/work-orders/notifications'
+import { notifyOwnerPendingApproval, sendVendorAssignmentNotifications } from '@/lib/work-orders/notifications'
 import type { WorkOrderStatus } from '@/lib/work-orders/transitions'
 
 // --- Action result type (shared pattern from contacts.ts) ---
@@ -108,7 +108,7 @@ export async function updateWorkOrderStatus(
   // Fetch current work order — scoped to org_id (defense in depth with RLS)
   const { data: wo, error: fetchError } = await ctx.supabase
     .from('work_orders')
-    .select('id, status, org_id, property_id, title, created_by, estimated_cost, vendor_cost, billed_amount, assigned_vendor_id')
+    .select('id, status, org_id, property_id, title, description, created_by, estimated_cost, vendor_cost, billed_amount, assigned_vendor_id, vendor_token')
     .eq('id', workOrderId)
     .eq('org_id', ctx.person.org_id)
     .single()
@@ -200,7 +200,27 @@ export async function updateWorkOrderStatus(
     })
   }
 
-  // 2. Expense auto-creation on completed (D-14, MAINT-09)
+  // 2. Vendor assignment notification: SMS + email (D-11, D-12, Plan 05-04)
+  if (actualNewStatus === 'assigned') {
+    const vendorId = extraData?.assigned_vendor_id ?? (wo.assigned_vendor_id as string | null)
+    const vendorToken = wo.vendor_token as string | null
+    if (vendorId && vendorToken) {
+      sendVendorAssignmentNotifications(
+        workOrderId,
+        ctx.person.org_id,
+        vendorId,
+        wo.property_id,
+        wo.title,
+        (wo.description as string) ?? '',
+        vendorToken
+      ).catch((err) => {
+        // Fire-and-forget — log but don't fail the action
+        console.error('[updateWorkOrderStatus] vendor notification failed:', err)
+      })
+    }
+  }
+
+  // 3. Expense auto-creation on completed (D-14, MAINT-09)
   if (actualNewStatus === 'completed') {
     const vendorCost = extraData?.vendor_cost ?? (wo.vendor_cost as number | null)
     const billedAmount = extraData?.billed_amount ?? (wo.billed_amount as number | null)

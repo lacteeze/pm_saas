@@ -8,7 +8,9 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { WorkOrderStatusBadge } from '@/components/work-orders/WorkOrderStatusBadge'
 import { TransitionButton } from '@/components/work-orders/TransitionButton'
+import { AssignVendorDialog } from '@/components/work-orders/AssignVendorDialog'
 import type { WorkOrderStatus, WorkOrderPriority } from '@/lib/work-orders/transitions'
+import type { VendorOption } from '@/components/work-orders/AssignVendorDialog'
 
 // Priority label map
 const PRIORITY_LABELS: Record<WorkOrderPriority, string> = {
@@ -83,6 +85,17 @@ export default async function WorkOrderDetailPage({ params }: PageProps) {
     .single()
 
   if (!workOrder) notFound()
+
+  // Fetch vendors for AssignVendorDialog — people in same org with role includes 'vendor'
+  const { data: vendorRows } = await supabase
+    .from('people')
+    .select('id, first_name, last_name, email, phone, role')
+    .eq('org_id', callerPerson.org_id)
+    .eq('active', true)
+
+  const vendors: VendorOption[] = (vendorRows ?? []).filter((p) =>
+    Array.isArray(p.role) && p.role.includes('vendor')
+  )
 
   const wo = workOrder as unknown as {
     id: string
@@ -204,17 +217,13 @@ export default async function WorkOrderDetailPage({ params }: PageProps) {
             currentStatus={wo.status}
             userRole={userRole}
           />
-          {/* AssignVendorDialog stub — 05-04 will implement the full dialog */}
-          {wo.status === 'submitted' || wo.status === 'approved' ? (
+          {/* AssignVendorDialog — assign vendor to submitted or approved work orders */}
+          {(wo.status === 'submitted' || wo.status === 'approved') ? (
             <div className="mt-3">
-              <button
-                type="button"
-                disabled
-                title="Assign Vendor — available in the next release (05-04)"
-                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-400 cursor-not-allowed"
-              >
-                Assign Vendor (coming soon)
-              </button>
+              <AssignVendorDialog
+                workOrderId={wo.id}
+                vendors={vendors}
+              />
             </div>
           ) : null}
         </section>
