@@ -149,7 +149,13 @@
   4. Any work order with an estimated cost above $500 is automatically flagged and the owner receives an in-app and email notification; the work order cannot advance until the owner approves or declines
   5. Work order costs (vendor_cost and billed_amount) are recorded and automatically flow into the property's expense ledger for disbursement calculation
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 05-01-PLAN.md — Schema migration (work_orders table) + middleware passthrough + DB push checkpoint
+- [ ] 05-02-PLAN.md — State machine library (transitions.ts) + all work order server actions
+- [ ] 05-03-PLAN.md — Manager work order list + detail page + create form
+- [ ] 05-04-PLAN.md — Vendor assignment dialog + Pingram SMS + no-login vendor job page
+- [ ] 05-05-PLAN.md — Owner approval email template + approve/decline no-login pages
+- [ ] 05-06-PLAN.md — Tenant portal maintenance surfaces + end-to-end verification
 **UI hint**: yes
 
 ---
