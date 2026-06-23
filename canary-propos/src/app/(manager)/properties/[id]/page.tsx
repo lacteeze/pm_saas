@@ -97,7 +97,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const { data: listings } = unitIds.length > 0
     ? await supabase
         .from('listings')
-        .select('id, unit_id, listing_title, listing_description, highlights, display_rent, available_from, listing_status')
+        .select('id, unit_id, listing_title, listing_description, highlights, display_rent, available_from, status')
         .in('unit_id', unitIds)
         .eq('org_id', callerPerson.org_id)
     : { data: [] }
@@ -458,10 +458,10 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                   draft: { bg: 'bg-stone-100', text: 'text-stone-700', label: 'Draft' },
                   published: { bg: 'bg-green-100', text: 'text-green-700', label: 'Published' },
                   unlisted: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Unlisted' },
-                }[listing.listing_status as string] ?? { bg: 'bg-stone-100', text: 'text-stone-700', label: listing.listing_status }
+                }[listing.status as string] ?? { bg: 'bg-stone-100', text: 'text-stone-700', label: listing.status }
 
-                const nextStatus = listing.listing_status === 'published' ? 'unlisted' : 'published'
-                const toggleLabel = listing.listing_status === 'published' ? 'Unpublish' : 'Publish'
+                const nextStatus = listing.status === 'published' ? 'unlisted' : 'published'
+                const toggleLabel = listing.status === 'published' ? 'Unpublish' : 'Publish'
 
                 return (
                   <div key={listing.id} className="rounded-xl border border-stone-200 bg-white p-5">
@@ -519,7 +519,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                               highlights: listing.highlights,
                               display_rent: listing.display_rent,
                               available_from: listing.available_from,
-                              listing_status: listing.listing_status,
+                              status: listing.status,
                             }}
                           />
                         </div>

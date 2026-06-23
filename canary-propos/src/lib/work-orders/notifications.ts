@@ -149,16 +149,16 @@ export async function notifyOwnerPendingApproval(
     .eq('org_id', orgId)
     .single()
 
-  // Find the owner person for this property (join via property_owners table)
-  const { data: ownerLink } = await adminSupabase
-    .from('property_owners')
-    .select('person:people(email, first_name)')
-    .eq('property_id', propertyId)
-    .limit(1)
+  // Find the owner via properties.owner_id FK → people
+  const { data: property } = await adminSupabase
+    .from('properties')
+    .select('owner:people!owner_id(email, first_name)')
+    .eq('id', propertyId)
     .single()
 
   // If we can't find an owner email, log and skip — don't crash the work order flow
-  const ownerEmail = (ownerLink?.person as { email?: string } | null)?.email
+  const owner = property?.owner as { email?: string; first_name?: string } | null
+  const ownerEmail = owner?.email
   if (!ownerEmail) {
     console.warn(
       `[notifyOwnerPendingApproval] No owner email found for property ${propertyId} — skipping notification`

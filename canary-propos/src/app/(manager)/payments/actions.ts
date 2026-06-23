@@ -53,7 +53,7 @@ export async function recordPayment(formData: RecordPaymentInput): Promise<Actio
 
   const parsed = recordPaymentSchema.safeParse(formData)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input.' }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
   }
 
   const { lease_id, amount, method, payment_date, notes } = parsed.data
@@ -115,7 +115,7 @@ export async function recordExpense(formData: RecordExpenseInput): Promise<Actio
 
   const parsed = recordExpenseSchema.safeParse(formData)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input.' }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
   }
 
   const { property_id, description, vendor_cost, billed_amount, expense_date } = parsed.data

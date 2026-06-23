@@ -34,12 +34,12 @@ export default async function OwnerDeclinePage({ params }: PageProps) {
   // Fetch property address for display
   const { data: property } = await adminSupabase
     .from('properties')
-    .select('address, city, province')
+    .select('street_address, city, province')
     .eq('id', wo.property_id)
     .single()
 
   const propertyAddress = property
-    ? `${property.address}, ${property.city}, ${property.province}`
+    ? `${property.street_address}, ${property.city}, ${property.province}`
     : 'your property'
 
   const formattedCost = new Intl.NumberFormat('en-CA', {

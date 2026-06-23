@@ -68,8 +68,8 @@ export function AssignVendorDialog({ workOrderId, vendors, onSuccess }: AssignVe
 
     startTransition(async () => {
       const result = await updateWorkOrderStatus(workOrderId, 'assigned', {
-        assigned_vendor_id: selectedVendorId,
-        estimated_cost: costNum,
+        vendorId: selectedVendorId,
+        estimatedCost: costNum,
       })
 
       if (!result.success) {

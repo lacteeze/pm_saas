@@ -1,7 +1,7 @@
 // src/components/leases/ExpiryAlertCallout.tsx
 // Lease expiry alert section — groups expiring leases into urgency buckets (LEASE-03)
 
-interface ExpiringLease {
+export interface ExpiringLease {
   id: string
   tenantName: string
   propertyUnit: string

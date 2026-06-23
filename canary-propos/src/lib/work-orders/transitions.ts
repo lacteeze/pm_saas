@@ -12,6 +12,8 @@ export type WorkOrderStatus =
   | 'completed'
   | 'closed'
 
+export type WorkOrderPriority = 'low' | 'medium' | 'high' | 'urgent'
+
 export type AllowedRole = 'manager' | 'tenant' | 'employee' | 'vendor_token'
 
 export type TransitionRule = {

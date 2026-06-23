@@ -35,7 +35,7 @@ export function TransitionButton({ workOrderId, currentStatus, userRole }: Trans
       if (EXCLUDED_TRANSITIONS.includes(toStatus)) return false
       const config = TRANSITIONS[toStatus]
       if (!config.allowedFrom.includes(currentStatus)) return false
-      return userRole.some((r) => config.allowedRoles.includes(r))
+      return userRole.some((r) => config.allowedRoles.includes(r as AllowedRole))
     }
   )
 
@@ -78,8 +78,8 @@ export function TransitionButton({ workOrderId, currentStatus, userRole }: Trans
     setLoading('completed')
     try {
       const result = await updateWorkOrderStatus(workOrderId, 'completed', {
-        vendor_cost: vc,
-        billed_amount: ba,
+        vendorCost: vc,
+        billedAmount: ba,
       })
       if (!result.success) {
         setError(result.error)
@@ -112,7 +112,7 @@ export function TransitionButton({ workOrderId, currentStatus, userRole }: Trans
             )
           }
 
-          const label = TRANSITIONS[toStatus].label
+          const label = toStatus.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
           const isLoading = loading === toStatus
 
           return (
