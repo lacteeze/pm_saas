@@ -2,109 +2,10 @@
 // SERVER ONLY — never import in 'use client' files.
 // Owner notification helpers for work order pending approval state.
 
-import { createElement } from 'react'
+import React from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/send'
-
-// --- Email template (inline — no JSX needed for simple HTML) ---
-function renderPendingApprovalEmail(opts: {
-  propertyAddress: string
-  workOrderTitle: string
-  estimatedCost: number
-  approveUrl: string
-  declineUrl: string
-}): React.ReactElement {
-  const { propertyAddress, workOrderTitle, estimatedCost, approveUrl, declineUrl } = opts
-
-  // Build a minimal React element tree compatible with @react-email/components render()
-  return createElement(
-    'html',
-    null,
-    createElement(
-      'body',
-      { style: { fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto', padding: '20px' } },
-      createElement('h2', { style: { color: '#1a1a1a' } }, 'Maintenance Approval Required'),
-      createElement(
-        'p',
-        null,
-        'A maintenance work order for one of your properties requires your approval before work can begin.'
-      ),
-      createElement(
-        'table',
-        { style: { borderCollapse: 'collapse', width: '100%', marginBottom: '24px' } },
-        createElement(
-          'tbody',
-          null,
-          createElement(
-            'tr',
-            null,
-            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold', width: '160px' } }, 'Property:'),
-            createElement('td', { style: { padding: '8px 0' } }, propertyAddress)
-          ),
-          createElement(
-            'tr',
-            null,
-            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold' } }, 'Work Order:'),
-            createElement('td', { style: { padding: '8px 0' } }, workOrderTitle)
-          ),
-          createElement(
-            'tr',
-            null,
-            createElement('td', { style: { padding: '8px 0', fontWeight: 'bold' } }, 'Estimated Cost:'),
-            createElement('td', { style: { padding: '8px 0' } }, `$${estimatedCost.toFixed(2)}`)
-          )
-        )
-      ),
-      createElement(
-        'p',
-        { style: { marginBottom: '16px' } },
-        'Please review and respond below:'
-      ),
-      createElement(
-        'div',
-        { style: { display: 'flex', gap: '12px' } },
-        createElement(
-          'a',
-          {
-            href: approveUrl,
-            style: {
-              display: 'inline-block',
-              padding: '12px 24px',
-              backgroundColor: '#16a34a',
-              color: '#ffffff',
-              textDecoration: 'none',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              marginRight: '12px',
-            },
-          },
-          'Approve Work Order'
-        ),
-        createElement(
-          'a',
-          {
-            href: declineUrl,
-            style: {
-              display: 'inline-block',
-              padding: '12px 24px',
-              backgroundColor: '#dc2626',
-              color: '#ffffff',
-              textDecoration: 'none',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-            },
-          },
-          'Decline Work Order'
-        )
-      ),
-      createElement(
-        'p',
-        { style: { marginTop: '32px', fontSize: '12px', color: '#6b7280' } },
-        'This approval request was sent by Canary PropOS. If you have questions, contact your property manager.'
-      )
-    )
-  ) as React.ReactElement
-}
+import { OwnerApprovalEmail } from '@/lib/email/templates/OwnerApprovalEmail'
 
 /**
  * notifyOwnerPendingApproval — sends an email notification to the property owner
@@ -130,10 +31,10 @@ export async function notifyOwnerPendingApproval(
 ): Promise<void> {
   const adminSupabase = createAdminClient()
 
-  // Look up the work order title
+  // Look up the work order title and description
   const { data: wo } = await adminSupabase
     .from('work_orders')
-    .select('title')
+    .select('title, description')
     .eq('id', workOrderId)
     .eq('org_id', orgId)
     .single()
@@ -169,14 +70,16 @@ export async function notifyOwnerPendingApproval(
     : `Property ${propertyId}`
 
   const workOrderTitle = wo?.title ?? 'Maintenance Work Order'
+  const workOrderDescription = wo?.description ?? ''
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.canarypm.ca'
   const approveUrl = `${baseUrl}/owner/approve/${approveToken}`
   const declineUrl = `${baseUrl}/owner/decline/${declineToken}`
 
-  const template = renderPendingApprovalEmail({
+  const template = React.createElement(OwnerApprovalEmail, {
     propertyAddress,
     workOrderTitle,
+    workOrderDescription,
     estimatedCost,
     approveUrl,
     declineUrl,
@@ -184,7 +87,7 @@ export async function notifyOwnerPendingApproval(
 
   const result = await sendEmail({
     to: ownerEmail,
-    subject: `Approval Required: ${workOrderTitle} — Est. $${estimatedCost.toFixed(2)}`,
+    subject: `Action Required: Maintenance Approval Needed — ${propertyAddress}`,
     template,
   })
 
