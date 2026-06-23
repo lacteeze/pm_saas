@@ -10,7 +10,7 @@ import { Home, CreditCard, Wrench, FileText } from 'lucide-react'
 const NAV_ITEMS = [
   { label: 'Home', href: '/my-home', icon: Home },
   { label: 'Pay Rent', href: '/pay-rent', icon: CreditCard },
-  { label: 'Maintenance', href: '/maintenance-requests', icon: Wrench },
+  { label: 'Maintenance', href: '/my-home/maintenance', icon: Wrench },
   { label: 'My Lease', href: '/my-lease', icon: FileText },
 ]
 
