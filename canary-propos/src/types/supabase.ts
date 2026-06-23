@@ -723,6 +723,108 @@ export type Database = {
           },
         ]
       }
+      work_orders: {
+        Row: {
+          assigned_vendor_id: string | null
+          billed_amount: number | null
+          created_at: string
+          created_by: string
+          description: string
+          estimated_cost: number | null
+          id: string
+          org_id: string
+          owner_approve_token: string | null
+          owner_decline_note: string | null
+          owner_decline_token: string | null
+          priority: Database["public"]["Enums"]["work_order_priority"]
+          property_id: string
+          status: Database["public"]["Enums"]["work_order_status"]
+          title: string
+          unit_id: string | null
+          updated_at: string
+          vendor_cost: number | null
+          vendor_token: string | null
+        }
+        Insert: {
+          assigned_vendor_id?: string | null
+          billed_amount?: number | null
+          created_at?: string
+          created_by: string
+          description: string
+          estimated_cost?: number | null
+          id?: string
+          org_id: string
+          owner_approve_token?: string | null
+          owner_decline_note?: string | null
+          owner_decline_token?: string | null
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          property_id: string
+          status?: Database["public"]["Enums"]["work_order_status"]
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+          vendor_cost?: number | null
+          vendor_token?: string | null
+        }
+        Update: {
+          assigned_vendor_id?: string | null
+          billed_amount?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          estimated_cost?: number | null
+          id?: string
+          org_id?: string
+          owner_approve_token?: string | null
+          owner_decline_note?: string | null
+          owner_decline_token?: string | null
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          property_id?: string
+          status?: Database["public"]["Enums"]["work_order_status"]
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+          vendor_cost?: number | null
+          vendor_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_assigned_vendor_id_fkey"
+            columns: ["assigned_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -751,6 +853,16 @@ export type Database = {
         | "townhouse"
         | "other"
       renewal_status_enum: "pending" | "sent" | "accepted" | "declined"
+      work_order_priority: "low" | "medium" | "high" | "urgent"
+      work_order_status:
+        | "draft"
+        | "submitted"
+        | "assigned"
+        | "in_progress"
+        | "pending_approval"
+        | "approved"
+        | "completed"
+        | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -890,6 +1002,17 @@ export const Constants = {
         "other",
       ],
       renewal_status_enum: ["pending", "sent", "accepted", "declined"],
+      work_order_priority: ["low", "medium", "high", "urgent"],
+      work_order_status: [
+        "draft",
+        "submitted",
+        "assigned",
+        "in_progress",
+        "pending_approval",
+        "approved",
+        "completed",
+        "closed",
+      ],
     },
   },
 } as const
