@@ -59,7 +59,6 @@ export async function POST(req: Request) {
             lease_id: leaseId,
             org_id: orgId,
             amount: pi.amount / 100,
-            currency: pi.currency,
             status: 'pending_clearance',
             method: 'stripe',
           })

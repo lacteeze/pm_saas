@@ -132,11 +132,12 @@ export async function calculateDisbursement(
   //    Phase 4 adds: payments.status = 'cleared', payments.cleared_at
   //
   //    Using direct Postgres RPC approach via supabase — join via units
-  const { data: paymentData } = await (supabase
+  // payments links to leases → units → properties; no direct property_id column
+  const { data: paymentData } = await supabase
     .from('payments')
-    .select('amount') as any)
+    .select('amount, leases!inner(units!inner(property_id))')
     .eq('org_id', callerPerson.org_id)
-    .eq('property_id', propertyId)
+    .eq('leases.units.property_id', propertyId)
     .eq('status', 'cleared')
     .gte('cleared_at', start)
     .lt('cleared_at', end)
