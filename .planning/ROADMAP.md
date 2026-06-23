@@ -172,7 +172,11 @@
   4. A tenant can view and download their current lease document as a PDF
   5. A tenant can view and complete their move-in or move-out digital checklist, and read announcements posted by management
 
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 06-01-PLAN.md — Schema migrations (checklists, checklist_items, announcements, alter people) + DB push
+- [ ] 06-02-PLAN.md — Checklist CRUD (manager create on /leases/[id] + tenant complete on /my-home/checklist)
+- [ ] 06-03-PLAN.md — Announcements (manager post on /properties/[id] + tenant feed at /my-home/announcements)
+- [ ] 06-04-PLAN.md — /my-home landing redesign with 5 summary cards + TenantShell nav update
 **UI hint**: yes
 
 ---
@@ -275,7 +279,7 @@
 | 3. Public Listings | 0/6 | Not started | - |
 | 4. Payments | 0/6 | Not started | - |
 | 5. Maintenance | 0/? | Not started | - |
-| 6. Tenant Portal | 0/? | Not started | - |
+| 6. Tenant Portal | 0/4 | Not started | - |
 | 7. Owner Portal | 0/? | Not started | - |
 | 8. Vendor Portal | 0/? | Not started | - |
 | 9. Inspections | 0/? | Not started | - |
