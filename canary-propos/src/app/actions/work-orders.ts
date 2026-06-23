@@ -298,3 +298,56 @@ export async function updateViaVendorToken(
   revalidatePath(`/vendor/jobs/${vendorToken}`)
   return { success: true }
 }
+
+// --- declineWorkOrderViaToken ---
+// Allows property owners to decline a high-cost work order via the no-login decline link.
+// Uses admin client — owner has no portal session on this route (D-09).
+// T-05-16: token is the credential; both tokens nullified atomically with status update.
+export async function declineWorkOrderViaToken(
+  declineToken: string,
+  note?: string
+): Promise<ActionResult> {
+  if (!declineToken?.trim()) {
+    return { success: false, error: 'Invalid decline token.' }
+  }
+
+  // Use admin client — owner no-login route has no session
+  const adminSupabase = createAdminClient()
+
+  // Look up work order by decline token with status guard
+  const { data: wo, error: fetchError } = await adminSupabase
+    .from('work_orders')
+    .select('id, status, org_id')
+    .eq('owner_decline_token', declineToken)
+    .eq('status', 'pending_approval')
+    .single()
+
+  if (fetchError || !wo) {
+    return { success: false, error: 'This link has already been used or is no longer valid.' }
+  }
+
+  // Atomic update: transition to closed + nullify both tokens + optional decline note.
+  // .eq('status', 'pending_approval') guard prevents double-fire (T-05-16).
+  const updatePayload: Record<string, unknown> = {
+    status: 'closed',
+    owner_approve_token: null,
+    owner_decline_token: null,
+    updated_at: new Date().toISOString(),
+  }
+  if (note?.trim()) {
+    updatePayload.owner_decline_note = note.trim()
+  }
+
+  const { error: updateError } = await adminSupabase
+    .from('work_orders')
+    .update(updatePayload)
+    .eq('id', wo.id)
+    .eq('status', 'pending_approval') // race condition guard
+
+  if (updateError) {
+    console.error('[declineWorkOrderViaToken] update error:', updateError)
+    return { success: false, error: 'Failed to process decline. Please try again.' }
+  }
+
+  return { success: true }
+}
