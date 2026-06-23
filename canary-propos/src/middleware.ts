@@ -8,6 +8,14 @@ function isPublicListingsPath(pathname: string): boolean {
   return pathname.startsWith('/listings')
 }
 
+function isMaintenanceNoLoginPath(pathname: string): boolean {
+  return (
+    pathname.startsWith('/vendor/jobs') ||
+    pathname.startsWith('/owner/approve') ||
+    pathname.startsWith('/owner/decline')
+  )
+}
+
 function extractOrgSlug(request: NextRequest): string {
   const hostname = request.headers.get('host') ?? ''
   const parts = hostname.split('.')
@@ -36,6 +44,11 @@ function isProtectedPath(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // No-login maintenance routes (vendor jobs, owner approve/decline) — token is the credential
+  if (isMaintenanceNoLoginPath(pathname)) {
+    return NextResponse.next({ request })
+  }
 
   // Public listings routes bypass auth entirely — extract org slug and return early
   if (isPublicListingsPath(pathname)) {
