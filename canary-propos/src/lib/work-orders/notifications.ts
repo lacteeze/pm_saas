@@ -140,20 +140,12 @@ export async function notifyOwnerPendingApproval(
     .eq('org_id', orgId)
     .single()
 
-  // Look up the property address and owner email via the property_owners join
-  // properties → property_owners → people (owner)
+  // Look up property address + owner email in a single query via owner_id FK → people
   const { data: property } = await adminSupabase
     .from('properties')
-    .select('street_address, city, province')
+    .select('street_address, city, province, owner:people!owner_id(email, first_name)')
     .eq('id', propertyId)
     .eq('org_id', orgId)
-    .single()
-
-  // Find the owner via properties.owner_id FK → people
-  const { data: property } = await adminSupabase
-    .from('properties')
-    .select('owner:people!owner_id(email, first_name)')
-    .eq('id', propertyId)
     .single()
 
   // If we can't find an owner email, log and skip — don't crash the work order flow

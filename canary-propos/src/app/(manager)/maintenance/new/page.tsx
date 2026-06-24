@@ -97,7 +97,10 @@ export default function NewWorkOrderPage() {
         .select('id, unit_number')
         .eq('property_id', selectedPropertyId)
         .order('unit_number')
-      setUnits(data ?? [])
+      // Coerce nullable unit_number — DB allows null but UnitOption requires string
+      setUnits(
+        (data ?? []).map((u) => ({ id: u.id, unit_number: u.unit_number ?? '' }))
+      )
     }
     loadUnits()
   }, [selectedPropertyId])
@@ -108,7 +111,7 @@ export default function NewWorkOrderPage() {
     try {
       const result = await createWorkOrder({
         property_id: values.property_id,
-        unit_id: values.unit_id || null,
+        unit_id: values.unit_id || undefined,
         title: values.title,
         description: values.description,
         priority: values.priority,

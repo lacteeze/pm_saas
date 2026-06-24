@@ -93,9 +93,16 @@ export default async function WorkOrderDetailPage({ params }: PageProps) {
     .eq('org_id', callerPerson.org_id)
     .eq('active', true)
 
-  const vendors: VendorOption[] = (vendorRows ?? []).filter((p) =>
-    Array.isArray(p.role) && p.role.includes('vendor')
-  )
+  // Coerce nullable name fields — DB allows null but VendorOption requires string
+  const vendors: VendorOption[] = (vendorRows ?? [])
+    .filter((p) => Array.isArray(p.role) && p.role.includes('vendor'))
+    .map((p) => ({
+      id: p.id,
+      first_name: p.first_name ?? '',
+      last_name: p.last_name ?? '',
+      email: p.email,
+      phone: p.phone,
+    }))
 
   const wo = workOrder as unknown as {
     id: string

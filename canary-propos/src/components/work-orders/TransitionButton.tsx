@@ -7,8 +7,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateWorkOrderStatus } from '@/app/actions/work-orders'
-import type { WorkOrderStatus } from '@/lib/work-orders/transitions'
 import { TRANSITIONS } from '@/lib/work-orders/transitions'
+import type { WorkOrderStatus, AllowedRole } from '@/lib/work-orders/transitions'
 
 interface TransitionButtonProps {
   workOrderId: string

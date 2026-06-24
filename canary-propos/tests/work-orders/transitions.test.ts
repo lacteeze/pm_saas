@@ -39,13 +39,17 @@ describe('validateTransition', () => {
   it('draft → completed with manager role returns valid: false with error', () => {
     const result = validateTransition('draft', 'completed', ['manager'])
     expect(result.valid).toBe(false)
-    expect(result.error).toMatch(/Cannot transition/i)
+    if (!result.valid) {
+      expect(result.error).toMatch(/Cannot transition/i)
+    }
   })
 
   it('submitted → assigned with tenant role returns valid: false with not permitted error', () => {
     const result = validateTransition('submitted', 'assigned', ['tenant'])
     expect(result.valid).toBe(false)
-    expect(result.error).toMatch(/not permitted/i)
+    if (!result.valid) {
+      expect(result.error).toMatch(/not permitted/i)
+    }
   })
 
   it('assigned → in_progress with vendor_token role returns valid: true', () => {
