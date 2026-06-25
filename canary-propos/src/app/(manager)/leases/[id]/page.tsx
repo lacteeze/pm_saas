@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { LeaseRenewalCard } from '@/components/leases/LeaseRenewalCard'
 import { LeaseDocUpload } from '@/components/leases/LeaseDocUpload'
 import { LeaseDownloadButton } from '@/components/leases/LeaseDownloadButton'
+import { ChecklistSection } from './ChecklistSection'
 
 interface LeaseDetailPageProps {
   params: Promise<{ id: string }>
@@ -80,6 +81,44 @@ export default async function LeaseDetailPage({ params }: LeaseDetailPageProps) 
 
   const isManager = callerPerson.role.includes('manager') || callerPerson.role.includes('admin')
 
+  // Fetch checklist for this lease (most recent)
+  const { data: checklistRow } = await supabase
+    .from('checklists')
+    .select('id, title, type, submitted_at, created_at')
+    .eq('lease_id', id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  let checklistWithItems: {
+    id: string
+    title: string
+    type: string
+    submitted_at: string | null
+    created_at: string
+    items: Array<{
+      id: string
+      position: number
+      label: string
+      checked: boolean
+      note: string | null
+      checked_at: string | null
+    }>
+  } | null = null
+
+  if (checklistRow) {
+    const { data: items } = await supabase
+      .from('checklist_items')
+      .select('id, position, label, checked, note, checked_at')
+      .eq('checklist_id', checklistRow.id)
+      .order('position', { ascending: true })
+
+    checklistWithItems = {
+      ...checklistRow,
+      items: items ?? [],
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 md:px-8">
       {/* Header */}
@@ -153,7 +192,18 @@ export default async function LeaseDetailPage({ params }: LeaseDetailPageProps) 
           </div>
         )}
 
-        {/* Card 3: Lease Document */}
+        {/* Card 3: Checklist */}
+        {isManager && (
+          <div className="rounded-xl border border-stone-200 bg-white p-6">
+            <h2 className="mb-1 text-base font-semibold text-stone-900">Checklist</h2>
+            <p className="mb-4 text-sm text-stone-500">
+              Create a move-in or move-out acknowledgment checklist for the tenant to sign off on.
+            </p>
+            <ChecklistSection leaseId={lease.id} existingChecklist={checklistWithItems} />
+          </div>
+        )}
+
+        {/* Card 4: Lease Document */}
         {isManager && (
           <div className="rounded-xl border border-stone-200 bg-white p-6">
             <h2 className="mb-1 text-base font-semibold text-stone-900">Lease Document</h2>
