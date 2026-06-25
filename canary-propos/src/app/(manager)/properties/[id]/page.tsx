@@ -9,6 +9,7 @@ import { PropertyPhotoUpload } from '@/components/properties/PropertyPhotoUpload
 import { ExpiryAlertCallout } from '@/components/leases/ExpiryAlertCallout'
 import { ListingForm } from '@/components/listings/ListingForm'
 import { toggleListingStatus } from '@/app/actions/listings'
+import { AnnouncementsSection } from './AnnouncementsSection'
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
   house: 'House',
@@ -104,6 +105,16 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
   const listingsList = listings ?? []
 
+  // Fetch announcements for this property (newest first)
+  const { data: announcementsData } = await supabase
+    .from('announcements')
+    .select('id, title, body, created_at, expires_at')
+    .eq('property_id', propertyId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const announcementsList = announcementsData ?? []
+
   // Compute occupancy
   const occupiedCount = unitsList.filter((u) => u.status === 'occupied').length
   const totalCount = unitsList.length
@@ -176,6 +187,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           <TabsTrigger value="units">Units {totalCount > 0 && `(${totalCount})`}</TabsTrigger>
           <TabsTrigger value="leases">Leases {leasesList.length > 0 && `(${leasesList.length})`}</TabsTrigger>
           <TabsTrigger value="listings">Listings {listingsList.length > 0 && `(${listingsList.length})`}</TabsTrigger>
+          <TabsTrigger value="announcements">Announcements {announcementsList.length > 0 && `(${announcementsList.length})`}</TabsTrigger>
         </TabsList>
 
         {/* Building Info Tab */}
@@ -541,6 +553,15 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               )}
             </div>
           )}
+        </TabsContent>
+        {/* Announcements Tab */}
+        <TabsContent value="announcements">
+          <div className="rounded-xl border border-stone-200 bg-white p-6">
+            <AnnouncementsSection
+              propertyId={propertyId}
+              announcements={announcementsList}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
